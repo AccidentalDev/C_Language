@@ -1,0 +1,267 @@
+//Carlos Fco. Camacho Uribe
+//Taller de Programacion de Sistemas
+#include<stdio.h>
+#include<conio.h>
+#include<string.h>
+#include<io.h>
+#include<stdlib.h>
+#include<CTYPE.H>
+#include<math.h>
+
+int mnemonico(char *mne){
+   if(strcmp(mne,"LDAA")==0){
+      return 0;
+   }else{
+      if(strcmp(mne,"LDAB")==0)
+	 return 1;
+      else
+	 if(strcmp(mne,"ORG")==0)
+	    return 11;
+	 else
+	    if(strcmp(mne,"END")==0)
+	       return 12;
+	    else
+	       if(strcmp(mne,"EQU")==0)
+		  return 13;
+	       else
+		  if(strcmp(mne,"DC.B")==0)
+		     return 14;
+		  else
+		     return -1;
+    }
+}
+
+int hx_a_ent(char hx){
+   if(hx=='a')
+      return(10);
+   else
+      if(hx=='b')
+	 return(11);
+      else
+	 if(hx=='c')
+	    return(12);
+	 else
+	    if(hx=='d')
+	       return(13);
+	    else
+	       if(hx=='e')
+		  return(14);
+	       else
+		  if(hx=='f')
+		     return(15);
+		  else
+		     return(-1);
+}
+double hexa_a_dec(char *hexa){
+   int count=0,numTemp,tamano;
+   double nums[7],numero=0;
+   char *temp,*tmp;
+   struct{
+      char elem;
+      int pos;//1=*16^0, 2=*16^1, 3=*16^2, ...etc.
+   }dato[7];
+
+   temp=strrev(hexa);//voltea al reves la cadena (Ej. cadena=anedac)
+   temp=strlwr(temp);
+   tamano=strlen(temp);
+   do{
+      dato[count].elem=temp[count];
+      dato[count].pos=count+1;
+      if(isdigit(dato[count].elem)==0){
+	 numTemp=hx_a_ent(dato[count].elem);
+	 nums[count]=numTemp*pow(16,count);
+      }else{
+	 tmp[0]=dato[count].elem;
+	 tmp[1]='\0';
+	 numTemp=atoi(tmp);
+	 nums[count]=numTemp*pow(16,count);
+       }
+      count++;
+   }while(temp[count]!='\0');
+   for(count=0;count<tamano;count++)
+      numero=numero+nums[count];
+   return(numero);
+}
+
+char *coops(int tipoMne,int tipoDir,int &longRef){
+   char *codigo;
+   //0=inmediato,1=directo,2=extendido,3=indexado1,4=indexado2,9=inherente
+   if(tipoMne==0){
+      if(tipoDir==0){
+	 codigo="86";
+	 longRef=2;
+      }else
+	 if(tipoDir==1){
+	    codigo="96";
+	    longRef=2;
+	 }else
+	    if(tipoDir==2){
+	       codigo="B6";
+	       longRef=3;
+	    }else
+	       if(tipoDir==3){
+		  codigo="A6";
+		  longRef=2;
+	       }else
+		  if(tipoDir==4){
+		     codigo="A6";
+		     longRef=3;
+		  }
+   }else{
+      if(tipoMne==1){
+	 if(tipoDir==0){
+	    codigo="C6";
+	    longRef=2;
+	 }else
+	    if(tipoDir==1){
+	       codigo="D6";
+	       longRef=2;
+	    }else
+	       if(tipoDir==2){
+		  codigo="F6";
+		  longRef=3;
+	       }else
+		  if(tipoDir==3){
+		     codigo="E6";
+		     longRef=2;
+		  }else
+		     if(tipoDir==4){
+			codigo="E6";
+			longRef=3;
+		     }
+      }else{
+	 if(tipoMne!=-1)
+	    codigo="Directiva";
+	 else
+	    codigo="Mnemonico desconocido";
+	 longRef=0;
+       }
+    }
+   return(codigo);
+}
+
+void prints(int tipoDir){
+   switch(tipoDir){
+	   case 0:printf("   **Es un modo de direccionamiento inmediato**");
+		  break;
+	   case 1:printf("   **Es un modo de direccionamiento directo**");
+		  break;
+	   case 2:printf("   **Es un modo de direccionamiento extendido**");
+		  break;
+	   case 3:printf("   **Es un modo de direccionamiento indexado1**");
+		  break;
+	   case 4:printf("   **Es un modo de direccionamiento indexado2**");
+		  break;
+	   case 9:printf("   **Es un modo de direccionamiento inherente**");
+		  break;
+	   default:printf(" ");
+   }
+}
+
+void ensambla(char cadena[]){
+   char temp[30],*et=0,*mnem=0,*op=0,*com=0,*check=0,*coop;
+   int longitud,Mne,dir;
+   double operando;
+   strcpy(temp,cadena);
+   if(temp[0]!='\t'){
+      et=strtok(temp,"\t");
+      mnem=strtok(NULL," ");
+   }else{
+      mnem=strtok(temp," ");
+      mnem=mnem+1;
+    }
+   op=strtok(NULL," ");
+   com=strtok(NULL," ");
+   printf("\n\tEtiqueta: %s",et);
+   printf("\n\tMnemonico: %s",mnem);
+   printf("\n\tOperandos: %s",op);
+   printf("\n\tComentarios: %s",com);
+
+   //Revision de mnemonico
+   mnem=strupr(mnem);
+   Mne=mnemonico(mnem);
+   if(Mne==-1){
+      dir=-1;
+      coop=coops(Mne,0,longitud);
+   }else{
+      //Inicia revision de tipo de direccionamiento
+      if(op==0){//Inherente
+	 coop=coops(Mne,9,longitud);
+	 dir=9;
+      }else{
+	 check=strchr(op,'#');
+	 if(check!=0){
+	    coop=coops(Mne,0,longitud);
+	    dir=0;//Inmediato
+	 }else{
+	    check=strchr(op,',');
+	    if(check!=0){
+	       coop=coops(Mne,3,longitud);
+	       dir=3;//indexado1
+	    }else{
+	       check=strchr(op,'[');
+	       if(check!=0){
+		  coop=coops(Mne,4,longitud);
+		  dir=4;//indexado2
+	       }else{
+		  check=strchr(op,'$');
+		  if(check!=0){
+		     op=op+1;
+		     operando=hexa_a_dec(op);
+		     if(operando>255){//extendido en hexadecinal
+			coop=coops(Mne,2,longitud);
+			dir=2;
+		     }else{//direxto en hexadecimal
+			coop=coops(Mne,1,longitud);
+			dir=1;
+		      }
+		  }else{
+		     operando=atoi(op);
+		     if(operando>255){//extendido
+			coop=coops(Mne,2,longitud);
+			dir=2;
+		     }else{//direxto
+			coop=coops(Mne,1,longitud);
+			dir=1;
+		      }
+		   }
+		}
+	     }
+	  }
+       }
+    }
+
+   printf("\n\tCodigo Objeto: %s",coop);prints(dir);
+   printf("\n\tLongitud: %d\n",longitud);
+}
+//----------------------------------MAIN-----------------------------------
+void main(){
+ char linea[30];
+ char *path=0,*name=0,tmp;
+ int contloc,file,posnull,endFile;
+ clrscr();
+ path="C:/Tc/Progs/";
+ name="test.asm";
+ strcat(path,name);
+ /*printf("\n\tEscribe el nombre del archivo .asm a abrir:\n\t");
+ gets(name);
+ printf("\n\tEscribe la ruta:\n\t");
+ gets(path);*/
+ if((file=open(path,0))<0)
+    printf("\n\tError al abrir el archivo\n\t");
+ else{
+    for(int j=0;(endFile=read(file,&tmp,1))!=0;j++){
+       for(int i=0;i<30&&tmp!='\n'&&endFile!=0;i++){
+	  linea[i]=tmp;
+	  endFile=read(file,&tmp,1);
+	  posnull=i;
+       }
+       linea[posnull+1]='\0';
+       ensambla(linea);
+       printf("\n\tPresiona cualquier tecla para continuar\n\t");
+       getch();
+    }
+    close(file);
+ }
+ //getch();
+}

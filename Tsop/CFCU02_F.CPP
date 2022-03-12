@@ -1,0 +1,284 @@
+//Carlos Fco. Camacho Uribe
+//Taller de Sistemas Operativos
+//Practica 02
+#include<stdio.h>
+#include<conio.h>
+#include<dos.h>
+void burbuja(int a[5][2]){
+   int b,i,y,z;
+   do{
+     b=0;
+     for(i=0;i<4;i++)
+	if(a[i][1]>a[i+1][1]){
+	   z=a[i][0];
+	   y=a[i][1];
+	   a[i][0]=a[i+1][0];
+	   a[i][1]=a[i+1][1];
+	   a[i+1][0]=z;
+	   a[i+1][1]=y;
+	   b=1;
+	}
+   }while(b==1);
+}
+
+void tabla(){
+   int x,y;
+   textcolor(6);
+   for(y=2;y<14;y++){
+      if(y==4||y==6||y==8||y==10||y==12){
+	 gotoxy(4,y);cprintf("Ã");
+	 gotoxy(61,y);cprintf("´");
+      }else{
+	 gotoxy(4,y);cprintf("³");
+	 gotoxy(12,y);cprintf("³");
+	 gotoxy(20,y);cprintf("³");
+	 gotoxy(29,y);cprintf("³");
+	 gotoxy(38,y);cprintf("³");
+	 gotoxy(47,y);cprintf("³");
+	 gotoxy(54,y);cprintf("³");
+	 gotoxy(61,y);cprintf("³");
+       }
+   }
+   for(x=5;x<61;x++){
+      if(x==12||x==20||x==29||x==38||x==47||x==54){
+	 gotoxy(x,1);cprintf("Â");
+	 gotoxy(x,4);cprintf("Å");
+	 gotoxy(x,6);cprintf("Å");
+	 gotoxy(x,8);cprintf("Å");
+	 gotoxy(x,10);cprintf("Å");
+	 gotoxy(x,12);cprintf("Å");
+	 gotoxy(x,14);cprintf("Á");
+      }else{
+	 gotoxy(x,1);cprintf("Ä");
+	 gotoxy(x,4);cprintf("Ä");
+	 gotoxy(x,6);cprintf("Ä");
+	 gotoxy(x,8);cprintf("Ä");
+	 gotoxy(x,10);cprintf("Ä");
+	 gotoxy(x,12);cprintf("Ä");
+	 gotoxy(x,14);cprintf("Ä");
+      }
+   }
+   gotoxy(4,1);cprintf("Ú");
+   gotoxy(61,1);cprintf("¿");
+   gotoxy(4,14);cprintf("À");
+   gotoxy(61,14);cprintf("Ù");
+}
+
+void ejes(){
+   int i,j;
+   textcolor(6);
+   for(i=16;i<=25;i++){
+      gotoxy(5,i);cprintf("³");
+   }
+   for(j=1;j<81;j++){
+      gotoxy(j,23);cprintf("Ä");
+   }
+   gotoxy(5,23);cprintf("Å");
+   textcolor(7);
+   gotoxy(6,24);
+   cprintf("1234567891111111111222222222233333333334444444444555555555566666666667");
+   gotoxy(15,25);cprintf("0123456789012345678901234567890123456789012345678901234567890");
+}
+
+void texto(){
+   textcolor(4);
+   gotoxy(5,2);cprintf("NOMBRE");
+   gotoxy(5,3);cprintf("PROCESO");
+   gotoxy(13,2);cprintf("HORA DE");
+   gotoxy(13,3);cprintf("LLEGADA");
+   gotoxy(21,2);cprintf("DURACION");
+   gotoxy(30,2);cprintf("TIEMPO");
+   gotoxy(30,3);cprintf("ASIGNADO");
+   gotoxy(39,2);cprintf("TIEMPO");
+   gotoxy(39,3);cprintf("RESTANTE");
+   gotoxy(48,2);cprintf("HORA");
+   gotoxy(48,3);cprintf("INICIO");
+   gotoxy(55,2);cprintf("TIEMPO");
+   gotoxy(55,3);cprintf("ESPERA");
+   textcolor(7);
+   gotoxy(8,5);cprintf("A");
+   gotoxy(8,7);cprintf("B");
+   gotoxy(8,9);cprintf("C");
+   gotoxy(8,11);cprintf("D");
+   gotoxy(8,13);cprintf("E");
+
+   gotoxy(50,5);cprintf("-");
+   gotoxy(50,7);cprintf("-");
+   gotoxy(50,9);cprintf("-");
+   gotoxy(50,11);cprintf("-");
+   gotoxy(50,13);cprintf("-");
+   gotoxy(57,5);cprintf("-");
+   gotoxy(57,7);cprintf("-");
+   gotoxy(57,9);cprintf("-");
+   gotoxy(57,11);cprintf("-");
+   gotoxy(57,13);cprintf("-");
+
+   gotoxy(64,4);cprintf("Promedio");
+   gotoxy(64,5);cprintf("de Espera:");
+   gotoxy(64,8);cprintf("Tiempo usado");
+   gotoxy(64,9);cprintf("por el S.O.");
+
+   textcolor(4);gotoxy(1,16);cprintf("S.O.");
+   textcolor(4);gotoxy(1,17);cprintf("NULO");
+   textcolor(3);gotoxy(4,18);cprintf("E");
+   textcolor(6);gotoxy(4,19);cprintf("D");
+   textcolor(5);gotoxy(4,20);cprintf("C");
+   textcolor(2);gotoxy(4,21);cprintf("B");
+   textcolor(1);gotoxy(4,22);cprintf("A");
+}
+
+/*void info_actual(int sel){
+
+}*/
+/*-------------------------------MAIN---------------------------------*/
+void main(){
+   //org[numero de proceso][hora llegada]
+   int org[5][2]={{0,0},{1,0},{2,0},{3,0},{4,0}};
+   int duracion[5],t_asign[5]={0,0,0,0,0};
+   int t_rest[5],inicio[5],t_espera[5],proceso=0,elapsed=1;
+   int i,t,posx=0,px=1;
+   clrscr();
+   tabla();
+   ejes();
+   texto();
+   //----------Captura los datos-------------
+   //Captura de llegadas
+   textcolor(7);
+
+   gotoxy(16,5);
+   scanf("%d",&org[0][1]);
+
+   gotoxy(16,7);
+   scanf("%d",&org[1][1]);
+
+   gotoxy(16,9);
+   scanf("%d",&org[2][1]);
+
+   gotoxy(16,11);
+   scanf("%d",&org[3][1]);
+
+   gotoxy(16,13);
+   scanf("%d",&org[4][1]);
+   //Fin captura de llegadas
+   //Captura de Duraciones
+   gotoxy(24,5);
+   scanf("%d",&duracion[0]);
+
+   gotoxy(24,7);
+   scanf("%d",&duracion[1]);
+
+   gotoxy(24,9);
+   scanf("%d",&duracion[2]);
+
+   gotoxy(24,11);
+   scanf("%d",&duracion[3]);
+
+   gotoxy(24,13);
+   scanf("%d",&duracion[4]);
+   //Fin captura de duraciones
+   //---------Fin captura de datos-----------
+   t=5;
+   for(i=0;i<5;i++){
+      gotoxy(33,t);
+      printf("%d",t_asign[i]);
+      t=t+2;
+   }
+   t=5;
+   for(i=0;i<5;i++){
+      gotoxy(42,t);
+      t_rest[i]=duracion[i];
+      printf("%d",t_rest[i]);
+      t=t+2;
+   }
+   burbuja(org);
+
+   //--------------Inicia representacion---------------
+   i=6;
+   do{
+     textcolor(7);
+     gotoxy(i,16);cprintf("Û");
+     gotoxy(i,17);cprintf("Û");
+     gotoxy(i,18);cprintf("Û");
+     gotoxy(i,19);cprintf("Û");
+     gotoxy(i,20);cprintf("Û");
+     gotoxy(i,21);cprintf("Û");
+     gotoxy(i,22);cprintf("Û");
+     if(org[proceso][1]<=elapsed){
+	if(t_asign[org[proceso][0]]==0){
+	   textcolor(4);gotoxy(i,16);cprintf("Û");
+	}else{
+	   if(t_rest[org[proceso][0]]>0){
+	      t_rest[org[proceso][0]]--;
+	      switch(org[proceso][0]){
+		 case 0:{textcolor(1);gotoxy(i,22);cprintf("Û");
+			}break;
+		 case 1:{textcolor(2);gotoxy(i,21);cprintf("Û");
+			}break;
+		 case 2:{textcolor(5);gotoxy(i,20);cprintf("Û");
+			}break;
+		 case 3:{textcolor(6);gotoxy(i,19);cprintf("Û");
+			}break;
+		 case 4:{textcolor(3);gotoxy(i,18);cprintf("Û");
+			}break;
+		 default:textcolor(7);
+	      }
+	   }
+	 }
+	t_asign[org[proceso][0]]++;
+     }else{
+	textcolor(0);gotoxy(i,17);cprintf("Û");
+      }
+     //---------------info_eje_x----------------
+     textcolor(4);
+     gotoxy(i,24);
+     if(i<15){
+	cprintf("%d",px);
+	px++;
+     }else{
+	if(i<25)
+	   cprintf("1");
+	else
+	   if(i<35)
+	      cprintf("2");
+	   else
+	      if(i<45)
+		 cprintf("3");
+	      else
+		 if(i<55)
+		    cprintf("4");
+		 else
+		    if(i<65)
+		       cprintf("5");
+		    else
+		       if(i<75)
+			  cprintf("6");
+		       else
+			  cprintf("7");
+      }
+     //------------------------
+     gotoxy(i,25);
+     if(i>14){
+	cprintf("%d",posx);
+	if(posx==9)
+	   posx=0;
+	else
+	   posx++;
+     }
+     //--------------fin_info_eje_x-------------
+     i++;
+     /*if(elapsed>=org[proceso][1])
+	t_asign[org[proceso][0]]++;*/
+     if(t_asign[org[proceso][0]]>duracion[org[proceso][0]])
+	proceso++;
+     elapsed++;
+     delay(500);
+   }while(proceso<5&&i<80);//NOTA:_No_poner_mayor_de_80
+   textcolor(6);
+   gotoxy(64,6);cprintf("8.00");
+   gotoxy(64,10);cprintf("15.12%");
+
+   getch();
+}
+/*Al estar programando esto me di cuenta de algunos errores
+que tienen internamente las funciones cprintf y cscanf por
+lo que he aprendido a usarlas con mayor discreci¢n*/

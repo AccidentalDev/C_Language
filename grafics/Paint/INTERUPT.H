@@ -1,0 +1,61 @@
+//Funciones de manejo de video y cursor
+#include<dos.h>
+
+
+int x,y;
+
+void modo(int modo){
+   union REGS reg;
+   reg.x.ax=modo; //guarda el valor en el registro
+   int86(0x10,&reg,&reg); //ejecuta la interrupcion
+}
+void pixel(int x,int y,int color){
+   if((x>56&&y>20)&&(x<639&&y<424)){
+      union REGS reg;
+      reg.h.ah=0xc; //valor del pixel
+      reg.h.al=color; //color del pixel
+      reg.h.bh=0; // pagina
+      reg.x.cx=x; //coordenada x
+      reg.x.dx=y; //coordenada y
+      int86(0x10,&reg,&reg); //ejecuta la interrupcion
+   }
+}
+void pixel2(int x,int y,int color){
+   union REGS reg;
+   reg.h.ah=0xc; //valor del pixel
+   reg.h.al=color; //color del pixel
+   reg.h.bh=0; // pagina
+   reg.x.cx=x; //coordenada x
+   reg.x.dx=y; //coordenada y
+   int86(0x10,&reg,&reg); //ejecuta la interrupcion
+}
+unsigned char lee_pixel(int x,int y){
+   union REGS reg;
+   reg.h.ah=13;//pixel
+   reg.x.bx=0;
+   reg.x.cx=x;
+   reg.x.dx=y;
+   int86(0x10,&reg,&reg);
+   return(reg.h.al);//color del pixel
+}
+void cursor(int opc){
+   union REGS reg;
+   reg.x.ax=opc;//0=init, 1=show, 2=hide
+   int86(0x33,&reg,&reg);
+}
+int lee_cursor(int *x,int *y,int modo){
+   union REGS reg;
+   reg.x.ax=3; //lee el estado
+   int86(0x33,&reg,&reg);
+
+   if(modo==0x3){
+      reg.x.cx/=8;
+      reg.x.dx/=8;
+   }
+   if(modo==0x13)
+      reg.x.cx/=2;
+   *x=reg.x.cx;
+   *y=reg.x.dx;
+   return(reg.x.bx);
+   //Return: 0=ninguno, 1=izquierdo, 2=derecho, 3=ambos
+}

@@ -1,0 +1,116 @@
+/*
+  Carlos Francisco Camacho Uribe
+  Codigo: 398251049
+  Taller de Programacion de sistemas
+*/
+
+#include<stdio.h>
+#include<conio.h>
+#include<string.h>
+#include<STDLIB.H>
+#include<CTYPE.H>
+
+typedef struct{
+   char tipo[3];
+   unsigned int longitud;
+   unsigned int dirIni;
+   char dirIniH[3],dirIniL[3];
+   char codigo[36];
+   //unsigned int chksum;
+   char chksum[3];
+}s19;
+s19 arrS19[6];
+char s19c=0;
+
+void capturaS19(FILE *fp){
+   char linea[51],*endptr;
+   char *tipo,*leng,*dirI,*cod,*chksm;
+
+   while(fgets(linea,50,fp)!=NULL){
+      tipo=strtok(linea," ");
+      leng=strtok(NULL," ");
+      dirI=strtok(NULL," ");
+      cod=strtok(NULL," ");
+      chksm=strtok(NULL,"\n");
+
+      strcpy(arrS19[s19c].tipo,tipo);
+      arrS19[s19c].longitud=strtol(leng,&endptr,16);
+
+      arrS19[s19c].dirIniH[0]=dirI[0];
+      arrS19[s19c].dirIniH[1]=dirI[1];
+      arrS19[s19c].dirIniH[2]='\0';
+      arrS19[s19c].dirIniL[0]=dirI[2];
+      arrS19[s19c].dirIniL[1]=dirI[3];
+      arrS19[s19c].dirIniL[2]='\0';
+
+      arrS19[s19c].dirIni=strtol(dirI,&endptr,16);
+      strcpy(arrS19[s19c].codigo,cod);
+      //arrS19[s19c].chksum=strtol(chksm,&endptr,16);
+      strcpy(arrS19[s19c].chksum,chksm);
+
+      /*printf("\n\t%s %s %s %s %s",tipo,leng,dirI,cod,chksm);
+      printf("\n\t%s %02X %04X %s %02X\n\t",arrS19[s19c].tipo,arrS19[s19c].longitud,arrS19[s19c].dirIni,arrS19[s19c].codigo,arrS19[s19c].chksum);
+      getch();*/
+      s19c++;
+   }
+}
+
+void main(void){
+ FILE *fPoint;
+ char ruta[50],aux[6],*endptr,chk[3],codLen;
+ unsigned int num,sum=0;
+
+ clrscr();
+ printf("\n\n\tEscribe la ruta y el nombre del archivo a abrir:\n\t");
+ scanf("%s",&ruta);
+ fflush(stdin);
+
+ if((fPoint=fopen(ruta,"rt"))==NULL){
+    printf("\n\n\tError al abrir el archivo\n\t");
+ }else{
+    capturaS19(fPoint);
+    printf("\n*******************************************************************************\n");
+    for(int i=0;i<s19c;i++){
+       if(strcmpi(arrS19[i].tipo,"s1")==0){
+	  sum=arrS19[i].longitud;
+	  sum+=strtol(arrS19[i].dirIniH,&endptr,16);
+	  sum+=strtol(arrS19[i].dirIniL,&endptr,16);
+
+	  int j;
+	  printf("\n");
+	  for(j=0;j<strlen(arrS19[i].codigo)/2;j++)
+	     printf("%04X ",arrS19[i].dirIni+j);
+	  if(arrS19[i].longitud<0x13)
+	     printf("\n");
+	  for(j=0;j<strlen(arrS19[i].codigo);j+=2){
+	     aux[0]=arrS19[i].codigo[j];
+	     aux[1]=arrS19[i].codigo[j+1];
+	     aux[2]='\0';
+	     num=strtol(aux,&endptr,16);
+	     sum+=num;
+	     //printf(" %s  ",aux);
+	     printf(" %02X  ",num);
+	  }
+	  sum=0xFFFF-sum;
+	  sprintf(aux,"%02X",sum);
+
+	  codLen=strlen(aux);
+
+	  chk[0]=toupper(aux[codLen-2]);
+	  chk[1]=toupper(aux[codLen-1]);
+	  chk[2]='\0';
+
+	  if(arrS19[i].longitud<0x13)
+	     printf("\n");
+	  if(strcmpi(chk,arrS19[i].chksum)==0)
+	     printf("\t checksum OK\n");
+	  else
+	     printf("\tERROR al comprobar el checksum\n");
+       }
+    }
+    printf("\n*******************************************************************************");
+    fclose(fPoint);
+ }
+ printf("\n\n\tFin del programa");
+ getch();
+}

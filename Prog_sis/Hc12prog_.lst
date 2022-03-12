@@ -1,0 +1,16 @@
+ENSAMBLADOR Beta 0.6.4
+Creado por: Carlos Fco. Camacho Uribe
+Ingenieria en Computacion, CUCEI UdeG
+
+
+CODIGO FUENTE			      CODIGO OBJETO
+
+(null)	Org	$4000	 0001 4000    Directiva
+ET1	EQU	$4006	 0002 4000    Directiva
+(null)	LDAA	30,sp	 0003 4000    A6 F0 1E
+(null)	ADDA	-16,x	 0004 4003    AB 10
+(null)	ADDB	D,pc	 0005 4005    EB FE
+(null)	LDAA	800,y	 0006 4007    A6 EA 0320
+(null)	LDAB	-100,y	 0007 400B    E6 E8 FF9C
+(null)	LDAA	-600,sp	 0008 400E    A6 F2 FDA8
+(null)	End	(null)	 0009 4012    Directiva

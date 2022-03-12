@@ -1,0 +1,23 @@
+#include<stdio.h>
+#include<conio.h>
+void main(void){
+   FILE *fPoint;
+   char *temp,ruta[50];
+   clrscr();
+   printf("\n\n\tEscribe la ruta y el nombre del archivo a abrir:\n\t");
+   scanf("%s",&ruta);
+   fflush(stdin);
+   if((fPoint=fopen(ruta,"rt"))==NULL){
+	 printf("\n\n\tError al abrir el archivo\n\t");
+	 getch();
+   }else{
+      printf("\n    ****************************************************");
+      while(fgets(temp,50,fPoint)!=NULL){
+	 printf("\n\t%s",temp);
+      }
+      printf("\n    ****************************************************");
+      fclose(fPoint);
+   }
+   printf("\n\n\tPresiona cualquier tecla para salir del programa");
+   getch();
+}

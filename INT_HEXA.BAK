@@ -1,0 +1,11 @@
+//Convertidor de entero a hexadecimal
+#include<stdio.h>
+#include<conio.h>
+void main(){
+   int dato;
+   clrscr();
+   printf("\n\n\tEscribe un numero entero: ");
+   scanf("%d",&dato);
+   printf("\n\n\n\ten hexadecimal es: %X",dato);
+   getch();
+}

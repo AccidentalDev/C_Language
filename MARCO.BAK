@@ -1,0 +1,92 @@
+#include <stdio.h>
+#include <conio.h>
+#include <math.h>
+/* bla bla bla */
+
+void main(void)
+{
+float long fact;
+float i,in,di,p,h;
+int opc,n;
+clrscr();
+printf ("\n\n\n");
+printf ("Calculador de factores para Ingenieria Economica");
+printf ("\n\n\n");
+printf ("Copyright: Marco Antonio Barajas Quintero");
+printf ("\t\n\n");
+printf ("Presione cualquier tecla para comenzar");
+getche();
+clrscr();
+printf ("\n\n\n");
+printf ("Introduce el Interes de forma porcentual: ");
+scanf ("%f",&i);
+di=i/100;
+in=di+1;
+printf ("Introduce el numero de a¤os: ");
+scanf ("%d",&n);
+printf ("\n\n\n");
+printf ("El interes introducido fue %f%",i);
+printf ("\n\n");
+printf ("El numero de a¤os introducido fu‚ %d ",n);
+printf ("\n\n\n\n");
+printf ("Que tipo de factor deseas calcular?\n\t 1)P dado F\n\t 2)F dado P\n\t 3)P dado A\n\t 4)A dado P\n\t 5)A dado F\n\t 6)F dado A\n\t 7)P dado G\n\t 8)A dado G");
+printf ("\n\n");
+p=pow(in,n);
+h=p-1;
+printf ("Presiona el numero de la opcion deseada: ");
+scanf ("%d",&opc);
+printf ("\n\n");
+printf ("La opcion elegida fue %d",opc);
+printf ("\n\n");
+switch (opc)
+{
+case 1:
+fact=1/p;
+printf ("\n\n");
+printf ("El factor de P dado F a %d a¤os con un %f de interes  es:\n\n\t\t\t%f",n,i,fact);
+break;
+case 2:
+fact=p;
+printf ("\n\n");
+printf ("El factor de F dado P a %d a¤os con un %f de interes  es:\n\n\t\t\t%f",n,i,fact);
+break;
+case 3:
+fact=h/(di*p);
+printf ("\n\n");
+printf ("El factor de P dado A a %d a¤os con un %f de interes  es:\n\n\t\t\t%f",n,i,fact);
+break;
+case 4:
+fact=(di*p)/h;
+printf ("\n\n");
+printf ("El factor de A dado P a %d a¤os con un %f de interes  es:\n\n\t\t\t%f",n,i,fact);
+break;
+case 5:
+fact=di/h;
+printf ("\n\n");
+printf ("El factor de A dado F a %d a¤os con un %f de interes  es:\n\n\t\t\t%f",n,i,fact);
+break;
+case 6:
+fact=h/di;
+printf ("\n\n");
+printf ("El factor de F dado A a %d a¤os con un %f de interes  es:\n\n\t\t\t%f",n,i,fact);
+break;
+case 7:
+fact=(1/di)*((h/(di*p))-(n/p));
+printf ("\n\n");
+printf ("El factor de P dado G a %d a¤os con un %f de interes  es:\n\n\t\t\t%f",n,i,fact);
+break;
+case 8:
+fact=(1/di)-(n/h);
+printf ("El factor de A dado G a %d a¤os con un %f de interes  es:\n\n\t\t\t%f",n,i,fact);
+break;
+default:
+printf ("Opcion no valida");
+}
+printf ("\n\n\n\n");
+printf ("Este programa ha sido elaborado por:");
+printf ("\n\n\t\t\t");
+printf ("Marco Antonio Barajas Quintero");
+printf ("\n\n\t\t\t\t\t\t\t");
+printf ("Credencial #1407183");
+getche();
+}

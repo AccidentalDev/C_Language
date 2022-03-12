@@ -1,0 +1,14 @@
+addb 8,-y
+adda 5,x+
+adda 54,x+
+adda b,x
+adda m,y
+adda d,y-
+ldaa &344
+adda 100,x
+adda -230,y
+adda 32000,x
+adda -25000,y
+adda [320,sp]
+adda [D,pc]
+adda [@467,y

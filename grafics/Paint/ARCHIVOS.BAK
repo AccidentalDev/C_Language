@@ -1,0 +1,271 @@
+//Graficas por computadora
+//Practica: Abrir/Guardar
+#include<stdio.h>
+#include<conio.h>
+#include<dos.h>
+#include<math.h>
+#include<string.h>
+//#include<F:\CFCU\interupt.h>
+#include<C:\Tc\Prog\Grafics\Paint\interupt.h>
+
+void lineaBly(int px1,int py1,int px2,int py2,int col){
+   pixel2(px1,py1,col);
+
+   int pk,xk,yk,Ax,Ay;
+   int incX,incY;
+   int c=0;
+   //Calculos preliminares
+   if(px1<px2)
+      incX=1;
+   else
+      if(px1>px2)
+	 incX=-1;
+      else
+	 incX=0;
+   if(py1<py2)
+      incY=1;
+   else
+      if(py1>py2)
+	 incY=-1;
+      else
+	 incY=0;
+   //Comienzan calculos para el algoritmo de Bresenham
+   Ax=px1-px2;
+   Ax=abs(Ax);
+   Ay=py1-py2;
+   Ay=abs(Ay);
+   //comienza a dibujarse la linea de bresenham
+   if(Ax>Ay){
+      pk=(2*Ay)-Ax;
+      xk=px1;
+      yk=py1;
+      do{
+	if(pk<0){
+	   xk+=incX;
+	   pk=pk+(2*Ay);
+	}else{
+	   xk+=incX;yk+=incY;
+	   pk=pk+2*(Ay-Ax);
+	 }
+	pixel2(xk,yk,col);
+	c++;
+      }while(c<Ax);
+   }else{
+      pk=(2*Ax)-Ay;
+      xk=px1;
+      yk=py1;
+      do{
+	if(pk<0){
+	   yk+=incY;
+	   pk=pk+(2*Ax);
+	}else{
+	   yk+=incY;xk+=incX;
+	   pk=pk+2*(Ax-Ay);
+	 }
+	pixel2(xk,yk,col);
+	c++;
+      }while(c<Ay);
+   }
+}
+void lineaB(int px1,int px2,int py1,int py2,int col,int b){
+   int pk,xk,yk,Ax,Ay;
+   int incX,incY;
+   int c=0;
+
+   cursor(0x2);
+   pixel(px1,py1,col);
+   //Calculos preliminares
+   if(px1<px2)
+      incX=1;
+   else
+      if(px1>px2)
+	 incX=-1;
+      else
+	 incX=0;
+   if(py1<py2)
+      incY=1;
+   else
+      if(py1>py2)
+	 incY=-1;
+      else
+	 incY=0;
+   //Comienzan calculos para el algoritmo de Bresenham
+   Ax=px1-px2;
+   Ax=abs(Ax);
+   Ay=py1-py2;
+   Ay=abs(Ay);
+   //comienza a dibujarse la linea de bresenham
+   if(Ax>Ay){
+      pk=(2*Ay)-Ax;
+      xk=px1;
+      yk=py1;
+      do{
+	if(pk<0){
+	   xk+=incX;
+	   pk=pk+(2*Ay);
+	}else{
+	   xk+=incX;yk+=incY;
+	   pk=pk+2*(Ay-Ax);
+	 }
+	//Inicia seccion de bandera
+	/*if(b==0)
+	   cLinea[c]=lee_pixel(xk,yk);*/
+	if(b==1)
+	   pixel(xk,yk,col);
+	/*if(b==2)
+	   pixel(xk,yk,cLinea[c]);*/
+	//Finaliza seccion de bandera
+	c++;
+      }while(c<Ax);
+   }else{
+      pk=(2*Ax)-Ay;
+      xk=px1;
+      yk=py1;
+      do{
+	if(pk<0){
+	   yk+=incY;
+	   pk=pk+(2*Ax);
+	}else{
+	   yk+=incY;xk+=incX;
+	   pk=pk+2*(Ax-Ay);
+	 }
+	//Inicia seccion de bandera
+	/*if(b==0)
+	   cLinea[c]=lee_pixel(xk,yk);*/
+	if(b==1)
+	   pixel(xk,yk,col);
+	/*if(b==2)
+	   pixel(xk,yk,cLinea[c]);*/
+	c++;
+      }while(c<Ay);
+   }
+   cursor(0x1);
+}
+
+char ruta[50]="         ";
+void archivos(int uso){
+   unsigned char temp;
+   FILE *fd;
+   if(uso==0){
+      if((fd=fopen(ruta,"rb"))==NULL){
+	 gotoxy(1,1);
+	 printf("                                                              ");
+	 gotoxy(1,1);
+	 printf("Error al abrir el archivo");
+	 getch();
+      }else{
+	 for(int a=57;a<639;a++)
+	    for(int b=21;b<424;b++){
+	       fread(&temp,sizeof(temp),1,fd);
+	       pixel(a,b,temp);
+	    }
+	 fclose(fd);
+      }
+   }else{
+      if((fd=fopen(ruta,"wb"))==NULL){
+	 gotoxy(1,1);
+	 printf("                                                              ");
+	 gotoxy(1,1);
+	 printf("Error al crear el archivo");
+	 getch();
+      }else{
+	 gotoxy(1,1);
+	 printf("Guardando......                                               ");
+	 for(int a=57;a<639;a++)
+	    for(int b=21;b<424;b++){
+	       temp=lee_pixel(a,b);
+	       fwrite(&temp,sizeof(temp),1,fd);
+	    }
+	 fclose(fd);
+      }
+   }
+}
+void options(int op){
+   char dec='s';
+   cursor(2);
+   switch(op){
+      case 49:{if(strcmp(ruta,"         ")==0){
+		  gotoxy(1,1);
+		  printf("                                                              ");
+		  gotoxy(1,1);
+		  printf("Ruta y nombre: ");
+		  scanf("%s",&ruta);
+		  fflush(stdin);
+	       }else{
+		  gotoxy(1,1);
+		  printf("                                                              ");
+		  gotoxy(1,1);
+		  printf("     ¨Abrir %s? (s/n)",ruta);
+		  dec=getch();
+		  fflush(stdin);
+		  if(dec!='s'){
+		     gotoxy(1,1);
+		     printf("                                                              ");
+		     gotoxy(1,1);
+		     printf("Ruta y nombre: ");
+		     scanf("%s",&ruta);
+		     fflush(stdin);
+		  }
+	       }
+	       gotoxy(1,1);
+	       printf("Abriendo......                                                ");
+	       archivos(0);
+	      }break;
+      case 50:{gotoxy(1,1);
+	       printf("                                                              ");
+	       gotoxy(1,1);
+	       printf("Ruta y nombre: ");
+	       scanf("%s",&ruta);
+	       fflush(stdin);
+	       archivos(1);
+	      }break;
+      case 51:{for(int a=57;a<639;a++)
+		  for(int b=21;b<424;b++)
+		     pixel(a,b,0);
+	      }break;
+   }
+   cursor(1);
+}
+/*****************************-M-A-I-N-******************************/
+void main(){
+ int xAct,yAct,color=2,sel=0;
+ int xAnt,yAnt;
+ modo(0x4);
+ modo(0x12);
+ lineaBly(56,20,56,424,15);
+ lineaBly(639,20,639,424,15);
+ lineaBly(56,424,639,424,15);
+ lineaBly(56,20,639,20,15);
+ cursor(0);
+ cursor(1);
+ while(sel!=52){
+    if(sel>48&&sel<52){
+       options(sel);
+       sel=0;
+    }
+    if(kbhit())
+       sel=getch();
+    gotoxy(1,1);
+    printf("1=Abrir  2=Guardar  3=Nuevo  4=Salir     Color: %d   sel: %d      ",color,sel);
+    if(lee_cursor(&x,&y,0x12)==2){
+       color++;
+       if(color==16)
+	  color=0;
+       delay(300);
+    }
+    if(lee_cursor(&x,&y,0x12)==1){
+       xAct=x;
+       yAct=y;
+       xAnt=x;
+       yAnt=y;
+       while(lee_cursor(&x,&y,0x12)==1){
+	  xAct=x;
+	  yAct=y;
+	  lineaB(xAnt,xAct,yAnt,yAct,color,1);
+	  while(lee_cursor(&x,&y,0x12)==1&&xAct==x&&yAct==y);
+	  xAnt=xAct;
+	  yAnt=yAct;
+       }
+    }
+ }
+}

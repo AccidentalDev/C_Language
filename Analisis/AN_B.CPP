@@ -1,0 +1,452 @@
+//Carlos Francisco Camacho Uribe
+//Analisis y dise¤o de algoritmos
+#include<stdio.h>
+#include<stdlib.h>
+#include<conio.h>
+#include<io.h>
+void BubbleSort(int a[],int n,long &com,long &m){
+   int i,z,c;
+   com=0;m=0;
+   for(c=1;c<n;c++)
+      for(i=0;i<(n-1);i++){
+	 com++;
+	 if(a[i]>a[i+1]){
+	    z=a[i];
+	    a[i]=a[i+1];
+	    a[i+1]=z;
+	    m++;
+	 }
+      }
+}
+void seleccion(int arr[],int n,long &c,long &m){
+   int i,j,min,z;
+   c=0;m=0;
+   for(i=0;i<=n;i++){
+      min=i;
+      for(j=i+1;j<n;j++){
+	 c++;
+	 if(arr[j]<arr[min])
+	    min=j;
+      }
+      z=arr[min];
+      arr[min]=arr[i];
+      arr[i]=z;
+      m++;
+   }
+}
+void insercion(int arr[],int n,long &c,long &m){
+   int i,j,aux,b;
+   c=0;m=0;
+   for(i=1;i<n;i++){
+      aux=arr[i];
+      b=0;
+      for(j=i-1;(j>=0)||(b==1);j--){
+	 c++;
+	 if(aux>arr[j]){
+	    arr[j+1]=aux;
+	    m++;
+	    b=1;
+	 }else{
+	    arr[j+1]=arr[j];
+	    m++;
+	 }
+      }
+      if(j==-1){
+	 arr[0]=aux;
+	 m++;
+      }
+   }
+}
+void shell(int arr[],int n,long &c,long &m){
+   int salto,i,j,k,z;
+   c=0;m=0;
+   salto=n/2;
+   while(salto>0){
+      for(i=salto;i<n;i++){
+	 for(j=i-salto;j>=0;j-=salto){
+	    k=j+salto;
+	    c++;
+	    if(arr[j]>arr[k]){
+	       z=arr[j];
+	       arr[j]=arr[k];
+	       arr[k]=z;
+	       m++;
+	    }else
+	       j=-1;
+	 }
+      }
+      salto=salto/2;
+   }
+}
+void captura(int list[],char *nFile){
+   char temp[6],c;
+   int file,pos=0,i=0;
+   if((file=open(nFile,0))>=0){
+      while(read(file,&c,1)!=0){
+	 if((c!=',')&&(c!='\n')){
+	    temp[pos]=c;
+	    pos++;
+	 }else{
+	    temp[pos]='\0';
+	    list[i]=atoi(temp);
+	    i++;
+	    pos=0;
+	 }
+      }
+      close(file);
+      /*printf("\n\tArchivo leido con exito\n\t");
+      getch();*/
+   }else{
+      gotoxy(1,24);
+      printf("Error al abrir el archivo %s",nFile);
+   }
+}
+
+/*---------------------------------M A I N-------------------------------*/
+void main(){
+   int lista[5],i;
+   long datos[2][5];//0=comparaciones, 1=movimientos
+   clrscr();
+   printf("                  Burbuja    Seleccion    Insercion     Shell    QuickSort");
+   printf("\n5 ascendente:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   printf("\n5 descendente:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   printf("\n5 aleatoria 1:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   printf("\n5 aleatoria 2:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   /*Inicia ordenamiento de la lista de 5 ascendentemente ordenada*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_up.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,5);printf("%d",datos[0][0]);
+   gotoxy(21,6);printf("%d",datos[1][0]);
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,5);printf("%d",datos[0][1]);
+   gotoxy(33,6);printf("%d",datos[1][1]);
+   /*insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,5);printf("%d",datos[0][2]);
+   gotoxy(47,6);printf("%d",datos[1][2]);*/
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,5);printf("%d",datos[0][3]);
+   gotoxy(59,6);printf("%d",datos[1][3]);
+   /*quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,5);printf("%d",datos[0][4]);
+   gotoxy(70,6);printf("%d",datos[1][4]);*/
+
+   /*Inicia ordenamiento de la lista de 5 descendentemente ordenada*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_down.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,10);printf("%d",datos[0][0]);
+   gotoxy(21,11);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_down.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,10);printf("%d",datos[0][1]);
+   gotoxy(33,11);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_down.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,10);printf("%d",datos[0][2]);
+   gotoxy(47,11);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_down.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,10);printf("%d",datos[0][3]);
+   gotoxy(59,11);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_down.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,10);printf("%d",datos[0][4]);
+   gotoxy(70,11);printf("%d",datos[1][4]);*/
+
+   /*Inicia ordenamiento de la lista de 5 desordenada 1*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand1.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,15);printf("%d",datos[0][0]);
+   gotoxy(21,16);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand1.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,15);printf("%d",datos[0][1]);
+   gotoxy(33,16);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand1.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,15);printf("%d",datos[0][2]);
+   gotoxy(47,16);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand1.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,15);printf("%d",datos[0][3]);
+   gotoxy(59,16);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand1.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,15);printf("%d",datos[0][4]);
+   gotoxy(70,16);printf("%d",datos[1][4]);*/
+
+   /*Inicia ordenamiento de la lista de 5 desordenada 2*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand2.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,20);printf("%d",datos[0][0]);
+   gotoxy(21,21);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand2.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,20);printf("%d",datos[0][1]);
+   gotoxy(33,21);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand2.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,20);printf("%d",datos[0][2]);
+   gotoxy(47,21);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand2.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,20);printf("%d",datos[0][3]);
+   gotoxy(59,21);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand2.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,20);printf("%d",datos[0][4]);
+   gotoxy(70,21);printf("%d",datos[1][4]);*/
+   //******************DEBUG******************
+   gotoxy(5,25);
+   printf("Debug: ");
+   for(i=0;i<5;i++)
+      printf("%d ",lista[i]);
+   getch();
+   //Inicia la siguiente pantalla
+   clrscr();
+   printf("                  Burbuja    Seleccion    Insercion     Shell    QuickSort");
+   printf("\n5 aleatoria 3:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   printf("\n5 aleatoria 4:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   printf("\n5 aleatoria 5:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   printf("\n5 aleatoria 6:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   /*Inicia ordenamiento de la lista de 5 desordenada 3*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand3.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,5);printf("%d",datos[0][0]);
+   gotoxy(21,6);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand3.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,5);printf("%d",datos[0][1]);
+   gotoxy(33,6);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand3.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,5);printf("%d",datos[0][2]);
+   gotoxy(47,6);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand3.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,5);printf("%d",datos[0][3]);
+   gotoxy(59,6);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand3.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,5);printf("%d",datos[0][4]);
+   gotoxy(70,6);printf("%d",datos[1][4]);*/
+
+   /*Inicia ordenamiento de la lista de 5 desordenada 4*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand4.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,10);printf("%d",datos[0][0]);
+   gotoxy(21,11);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand4.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,10);printf("%d",datos[0][1]);
+   gotoxy(33,11);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand4.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,10);printf("%d",datos[0][2]);
+   gotoxy(47,11);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand4.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,10);printf("%d",datos[0][3]);
+   gotoxy(59,11);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand4.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,10);printf("%d",datos[0][4]);
+   gotoxy(70,11);printf("%d",datos[1][4]);*/
+
+   /*Inicia ordenamiento de la lista de 5 desordenada 5*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand5.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,15);printf("%d",datos[0][0]);
+   gotoxy(21,16);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand5.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,15);printf("%d",datos[0][1]);
+   gotoxy(33,16);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand5.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,15);printf("%d",datos[0][2]);
+   gotoxy(47,16);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand5.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,15);printf("%d",datos[0][3]);
+   gotoxy(59,16);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand5.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,15);printf("%d",datos[0][4]);
+   gotoxy(70,16);printf("%d",datos[1][4]);*/
+
+   /*Inicia ordenamiento de la lista de 5 desordenada 6*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand6.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,20);printf("%d",datos[0][0]);
+   gotoxy(21,21);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand6.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,20);printf("%d",datos[0][1]);
+   gotoxy(33,21);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand6.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,20);printf("%d",datos[0][2]);
+   gotoxy(47,21);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand6.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,20);printf("%d",datos[0][3]);
+   gotoxy(59,21);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand6.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,20);printf("%d",datos[0][4]);
+   gotoxy(70,21);printf("%d",datos[1][4]);*/
+   //******************DEBUG******************
+   gotoxy(5,25);
+   printf("Debug: ");
+   for(i=0;i<5;i++)
+      printf("%d ",lista[i]);
+   getch();
+   //Inicia la siguiente pantalla
+   clrscr();
+   printf("                  Burbuja    Seleccion    Insercion     Shell    QuickSort");
+   printf("\n5 aleatoria 7:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   printf("\n5 aleatoria 8:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   printf("\n5 aleatoria 9:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   printf("\n5 aleatoria 10:");
+   printf("\n      T.Inicio");
+   printf("\n         T.Fin");
+   printf("\n Comparaciones");
+   printf("\n   Movimientos");
+   /*Inicia ordenamiento de la lista de 5 desordenada 7*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand7.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,5);printf("%d",datos[0][0]);
+   gotoxy(21,6);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand7.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,5);printf("%d",datos[0][1]);
+   gotoxy(33,6);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand7.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,5);printf("%d",datos[0][2]);
+   gotoxy(47,6);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand7.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,5);printf("%d",datos[0][3]);
+   gotoxy(59,6);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand7.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,5);printf("%d",datos[0][4]);
+   gotoxy(70,6);printf("%d",datos[1][4]);*/
+
+   /*Inicia ordenamiento de la lista de 5 desordenada 8*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand8.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,10);printf("%d",datos[0][0]);
+   gotoxy(21,11);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand8.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,10);printf("%d",datos[0][1]);
+   gotoxy(33,11);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand8.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,10);printf("%d",datos[0][2]);
+   gotoxy(47,11);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand8.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,10);printf("%d",datos[0][3]);
+   gotoxy(59,11);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand8.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,10);printf("%d",datos[0][4]);
+   gotoxy(70,11);printf("%d",datos[1][4]);*/
+
+   /*Inicia ordenamiento de la lista de 5 desordenada 9*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand9.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,15);printf("%d",datos[0][0]);
+   gotoxy(21,16);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand9.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,15);printf("%d",datos[0][1]);
+   gotoxy(33,16);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand9.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,15);printf("%d",datos[0][2]);
+   gotoxy(47,16);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand9.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,15);printf("%d",datos[0][3]);
+   gotoxy(59,16);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand9.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,15);printf("%d",datos[0][4]);
+   gotoxy(70,16);printf("%d",datos[1][4]);*/
+
+   /*Inicia ordenamiento de la lista de 5 desordenada 10*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand10.txt");
+   BubbleSort(lista,5,datos[0][0],datos[1][0]);
+   gotoxy(21,20);printf("%d",datos[0][0]);
+   gotoxy(21,21);printf("%d",datos[1][0]);
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand10.txt");
+   seleccion(lista,5,datos[0][1],datos[1][1]);
+   gotoxy(33,20);printf("%d",datos[0][1]);
+   gotoxy(33,21);printf("%d",datos[1][1]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand10.txt");
+   insercion(lista,5,datos[0][2],datos[1][2]);
+   gotoxy(47,20);printf("%d",datos[0][2]);
+   gotoxy(47,21);printf("%d",datos[1][2]);*/
+   captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand10.txt");
+   shell(lista,5,datos[0][3],datos[1][3]);
+   gotoxy(59,20);printf("%d",datos[0][3]);
+   gotoxy(59,21);printf("%d",datos[1][3]);
+   /*captura(lista,"C:/Tc/Prog/Analisis/lists/5_rand10.txt");
+   quickSort(lista,5,datos[0][3],datos[1][4]);
+   gotoxy(70,20);printf("%d",datos[0][4]);
+   gotoxy(70,21);printf("%d",datos[1][4]);*/
+   //******************DEBUG******************
+   gotoxy(5,25);
+   printf("Debug: ");
+   for(i=0;i<5;i++)
+      printf("%d ",lista[i]);
+   getch();
+}

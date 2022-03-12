@@ -1,0 +1,33 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<conio.h>
+#include<io.h>
+void captura(int list[],char *nFile){
+   char temp[6],c;
+   int file,pos=0,i=0;
+   if((file=open(nFile,0))>=0){
+      while(read(file,&c,1)!=0){
+	 if((c!=',')&&(c!='\n')){
+	    temp[pos]=c;
+	    pos++;
+	 }else{
+	    temp[pos]='\0';
+	    list[i]=atoi(temp);
+	    i++;
+	    pos=0;
+	 }
+      }
+      close(file);
+      printf("\n\tArchivo leido con exito\n\t");
+      getch();
+   }else
+      printf("\n\tError al abrir el archivo");
+}
+void main(){
+   int a[5];
+   captura(a,"C:/Tc/Prog/Analisis/lists/5_down.txt");
+   printf("\n\n\t");
+   for(int i=0;i<5;i++)
+      printf("%d ",a[i]);
+   getch();
+}

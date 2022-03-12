@@ -1,0 +1,390 @@
+//Carlos Fco. Camacho Uribe
+//Taller de Sistemas Operativos
+//Practica 06: Exclusion mutua con Semaforos
+
+#include<stdio.h>
+#include<conio.h>
+#include<dos.h>
+#include<setjmp.h>
+#include<mem.h>
+#include<string.h>
+#include<c:\Tc\Prog\tsop\cola_sop.h>
+
+#define Inicial 0
+#define Listo 1
+#define Ejecucion 2
+#define Bloqueado 3
+#define delVar 500
+
+
+jmp_buf DirSO;
+char *dir_inicio_pila;
+int op,i,c,tmp,ban;
+
+typedef struct{
+   int id;
+   char nombre[14];
+   int estado;
+   void (*direccion)();
+   //------------------------
+   int prioridad_estatica;
+   int prioridad_dinamica;//Maximo 30
+   //Los dos anteriores se deben inicializar con el mismo valor
+   jmp_buf RegistrosCPU;
+   char Pila[4000];
+   size_t tam_pila;
+}BCP;
+
+BCP *aptBCPejec;
+BCP Lista[10];
+
+void ceder_control(){
+   char fin;
+   if(&fin>dir_inicio_pila){
+      aptBCPejec->tam_pila=&fin-dir_inicio_pila+1;
+      memcpy(aptBCPejec->Pila,dir_inicio_pila,aptBCPejec->tam_pila);
+   }else{
+      aptBCPejec->tam_pila=dir_inicio_pila-&fin+1;
+      memcpy(aptBCPejec->Pila,&fin,aptBCPejec->tam_pila);
+    }
+   if(aptBCPejec->estado!=Bloqueado)
+      aptBCPejec->estado=Listo;
+   if(!setjmp(aptBCPejec->RegistrosCPU)){//poner break point aqui
+      longjmp(DirSO,1);
+   }
+}
+
+void restaurar_contexto(){
+   char colchon[4000];
+   if(colchon>dir_inicio_pila)
+      memcpy(dir_inicio_pila,aptBCPejec->Pila,aptBCPejec->tam_pila);
+   else
+      memcpy(dir_inicio_pila-aptBCPejec->tam_pila+1,aptBCPejec->Pila,aptBCPejec->tam_pila);
+   //Estado en ejecucion:
+   aptBCPejec->estado=Ejecucion;
+   longjmp(aptBCPejec->RegistrosCPU,1);
+}
+
+void bloquear(){
+   aptBCPejec->estado=Bloqueado;
+   ceder_control();
+}
+void desbloquear(int ident){
+   Lista[ident-1].estado=Listo;
+}
+//******************Definicion del semaforo******************
+class Semaforo{
+   protected:
+      int valor;
+      Cola cola_id_proc_espera;
+   public:
+      Semaforo();
+      void wait();
+      void signal();
+      void muestra();
+};
+Semaforo::Semaforo(){
+   valor=1;
+   Inicializa(cola_id_proc_espera);
+}
+void Semaforo::wait(){
+   if(valor>0)
+      valor--;
+   else{
+      PoneEnCola(aptBCPejec->id,cola_id_proc_espera);
+      bloquear();
+   }
+}
+void Semaforo::signal(){
+   if(!(Vacia(cola_id_proc_espera))){
+      tmp=ValorEnTope(cola_id_proc_espera);
+      QuitaDeCola(cola_id_proc_espera);
+      desbloquear(tmp);
+   }else
+      valor++;
+}
+void Semaforo::muestra(){//Modificar para que muestre cuales estan en cola
+   int counter=0;
+   clrscr();
+   printf("\n\tContenido del Semaforo\n\n\n");
+   printf("\tELEMENTOS EN COLA:         VALOR:\n");
+   if(Vacia(cola_id_proc_espera))
+      printf("\t   Cola Vacia");
+   else{
+      counter=cola_id_proc_espera.frente-1;
+      do{
+	counter++;
+	if(counter==MAX)
+	   counter=0;
+	printf("\t      %d\n",cola_id_proc_espera.elems[counter]);
+      }while(counter!=cola_id_proc_espera.final);
+   }
+   gotoxy(38,9);printf("%d",valor);
+   getch();
+}
+//******************fin definicion semaforo******************
+Semaforo exclusion;
+//----------------Definicion de los procesos---------------
+void proceso1(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄ƒƒƒƒƒƒƒø (p1)\n\r");ceder_control();
+      printf("\t≥*******≥ (p1)\n\r");ceder_control();
+      printf("\t¿ƒƒƒƒƒƒƒŸ (p1)\n\r");ceder_control();
+      sound(200);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+void proceso2(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄-------ø (p2)\n\r");ceder_control();
+      printf("\t≥-------≥ (p2)\n\r");ceder_control();
+      printf("\t¿-------Ÿ (p2)\n\r");ceder_control();
+      sound(250);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+void proceso3(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄+++++++ø (p3)\n\r");ceder_control();
+      printf("\t≥+++++++≥ (p3)\n\r");ceder_control();
+      printf("\t¿+++++++Ÿ (p3)\n\r");ceder_control();
+      sound(300);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+void proceso4(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄///////ø (p4)\n\r");ceder_control();
+      printf("\t≥///////≥ (p4)\n\r");ceder_control();
+      printf("\t¿///////Ÿ (p4)\n\r");ceder_control();
+      sound(350);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+void proceso5(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄ßßßßßßßø (p5)\n\r");ceder_control();
+      printf("\t≥ßßßßßßß≥ (p5)\n\r");ceder_control();
+      printf("\t¿ßßßßßßßŸ (p5)\n\r");ceder_control();
+      sound(400);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+void proceso6(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄¶¶¶¶¶¶¶ø (p6)\n\r");ceder_control();
+      printf("\t≥¶¶¶¶¶¶¶≥ (p6)\n\r");ceder_control();
+      printf("\t¿¶¶¶¶¶¶¶Ÿ (p6)\n\r");ceder_control();
+      sound(450);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+void proceso7(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄=======ø (p7)\n\r");ceder_control();
+      printf("\t≥=======≥ (p7)\n\r");ceder_control();
+      printf("\t¿=======Ÿ (p7)\n\r");ceder_control();
+      sound(500);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+void proceso8(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄¬¬¬¬¬¬¬ø (p8)\n\r");ceder_control();
+      printf("\t≥≈≈≈≈≈≈≈≥ (p8)\n\r");ceder_control();
+      printf("\t¿¡¡¡¡¡¡¡Ÿ (p8)\n\r");ceder_control();
+      sound(550);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+void proceso9(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄.......ø (p9)\n\r");ceder_control();
+      printf("\t≥.......≥ (p9)\n\r");ceder_control();
+      printf("\t¿.......Ÿ (p9)\n\r");ceder_control();
+      sound(600);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+void proceso10(){
+   while(1){
+      exclusion.wait();
+      printf("\n\n\t⁄<<<<<<<ø (p10)\n\r");ceder_control();
+      printf("\t≥>>>>>>>≥ (p10)\n\r");ceder_control();
+      printf("\t¿<<<<<<<Ÿ (p10)\n\r");ceder_control();
+      sound(650);
+      delay(50);
+      nosound();
+      delay(1000);
+      exclusion.signal();
+   }
+}
+//------------Fin definicion de los procesos------------
+
+void muestraBCP(){
+   char estados[3][14];
+   strcpy(estados[0],"Listo");
+   strcpy(estados[1],"Ejecutando");
+   strcpy(estados[2],"Bloqueado");
+   clrscr();
+   printf("\n\tContenido del Descriptor de Procesos\n");
+   printf("\n\n");
+   printf("NOMBRE\t\tID\tESTADO  DIRECCION  Tama§oPila  P.ESTATICA  P.DINAMICA\n\n");
+   for(int i=0;i<10;i++){
+      printf("%s\t%d\t%s",Lista[i].nombre,Lista[i].id,estados[Lista[i].estado-1]);
+      gotoxy(36,i+7);
+      printf("%d",Lista[i].direccion);
+      gotoxy(48,i+7);printf("%d",Lista[i].tam_pila);
+      gotoxy(62,i+7);printf("%d",Lista[i].prioridad_estatica);
+      gotoxy(72,i+7);printf("%d\n",Lista[i].prioridad_dinamica);
+   }
+   getch();
+}
+
+void modifPrior(){
+   clrscr();
+   for(int i=0;i<10;i++){
+      printf("\nIntroduce la nueva prioridad del proceso %d: ",i+1);
+      scanf("%d",&Lista[i].prioridad_estatica);
+      Lista[i].prioridad_dinamica=Lista[i].prioridad_estatica;
+   }
+}
+//----------------------------------MAIN-----------------------------------
+
+void main(){
+  char x;
+  ban=1;
+  dir_inicio_pila=&x;
+
+  //-----Inicializacion del BCP-----
+  Lista[0].direccion=&proceso1;
+  Lista[1].direccion=&proceso2;
+  Lista[2].direccion=&proceso3;
+  Lista[3].direccion=&proceso4;
+  Lista[4].direccion=&proceso5;
+  Lista[5].direccion=&proceso6;
+  Lista[6].direccion=&proceso7;
+  Lista[7].direccion=&proceso8;
+  Lista[8].direccion=&proceso9;
+  Lista[9].direccion=&proceso10;
+
+  for(int j=0;j<10;j++){
+     Lista[j].estado=0;
+     Lista[j].id=j+1;
+     Lista[j].prioridad_estatica=Lista[j].prioridad_dinamica=5/*j+1*/;
+  }
+  strcpy(Lista[0].nombre,"Proceso 1");
+  strcpy(Lista[1].nombre,"Proceso 2");
+  strcpy(Lista[2].nombre,"Proceso 3");
+  strcpy(Lista[3].nombre,"Proceso 4");
+  strcpy(Lista[4].nombre,"Proceso 5");
+  strcpy(Lista[5].nombre,"Proceso 6");
+  strcpy(Lista[6].nombre,"Proceso 7");
+  strcpy(Lista[7].nombre,"Proceso 8");
+  strcpy(Lista[8].nombre,"Proceso 9");
+  strcpy(Lista[9].nombre,"Proceso 10");
+  //-----Fin de la inicializacion-----
+
+  do{
+     clrscr();
+     textcolor(7);
+     if(ban==0){
+	printf("\n\tMENU:\n\t");
+	printf("\n\t1-Otras 100 iteraciones");
+	printf("\n\t2-Mostrar el contenido del descriptor de procesos");
+	printf("\n\t3-Modificar prioridades");
+	printf("\n\t4-Muestra Semaforo");
+	printf("\n\t5-Salir");
+	printf("\n\n\tOpcion: ");
+	scanf("%d",&op);
+     }else
+	op=1;
+
+     switch(op){
+	case 1:{i=0;
+		setjmp(DirSO);
+		ban=0;
+		//--------------Inicio de iteraciones--------------
+		for(;i++<100;){
+		   //Elegir siguiente proceso
+		   aptBCPejec=&Lista[0];
+		   for(c=1;c<10;c++){
+		      if(aptBCPejec->prioridad_dinamica<Lista[c].prioridad_dinamica)
+			 aptBCPejec=&Lista[c];
+		   }
+		   //Envejecer procesos
+		   for(c=0;c<10;c++)
+		      if(Lista[c].estado!=Bloqueado)
+			 Lista[c].prioridad_dinamica++;
+		   //Reestablecer prioridad dinamica
+		   if(aptBCPejec->estado!=Bloqueado)
+		      aptBCPejec->prioridad_dinamica=aptBCPejec->prioridad_estatica;
+
+		   if(aptBCPejec->estado==Inicial){
+		      aptBCPejec->estado=Ejecucion;
+		      (aptBCPejec->direccion)();
+		      aptBCPejec->estado=Listo;
+		   }else
+		      if(aptBCPejec->estado==Listo)
+			 restaurar_contexto();
+		}
+		//---------------Fin de iteraciones----------------
+	       }break;
+	case 2:muestraBCP();
+	       break;
+	case 3:modifPrior();
+	       break;
+	case 4:exclusion.muestra();
+	       break;
+	case 5:printf("\n\n\tFin del Programa");
+	       break;
+	default:{printf("\n\tDebes seleccionar un numero de entre el 1 y el 4");
+		 delay(1000);
+		}
+     }
+  }while(op!=5);
+  delay(1000);
+}
+//Ctrl+F8 = Activar breakpoint en la linea seleccionada
+/*Una cosa interesante al depurar programas es que
+es muy necesaria la paciencia, porque el desesperarse
+puede provocar el omitir pruebas que siempre ayudan a
+conocer mejor el funcionamiento REAL del programa. Por
+fortuna he logrado tener la paciencia suficiente para
+poder encontrar los problemas con este*/

@@ -1,0 +1,140 @@
+#include<stdio.h>
+
+typedef struct reg{
+	int cod;
+	char autor[20], disco[20];
+	float precio;
+};
+
+typedef struct idx{
+  int nrr, llave;
+};
+
+struct nodo{
+  int llave, nrr;
+  nodo *izq, *der;
+};
+
+typedef nodo *Nodo;
+
+void inicializa(Nodo &R){
+  R=NULL;
+}
+
+void insertar(int nreg, int cod, Nodo &R){
+  if(R==NULL){
+    R=new(nodo);
+    R->nrr=nreg;
+    R->llave=cod;
+    R->izq=NULL;
+    R->der=NULL;
+  }
+  else
+    if(cod > R->llave)
+      insertar(nreg, cod, R->der);
+    else
+      if(cod < R->llave)
+	insertar(nreg, cod, R->der);
+}
+
+Nodo busca(int cod, Nodo R){
+  Nodo p=R;
+  if(cod==p->llave || p==NULL)
+    return(p);
+  else
+    if(cod > p->llave)
+      return(busca(cod, p->der));
+    else
+      return(busca(cod, p->izq));
+}
+
+void actualiza(FILE *pif, Nodo R){
+  idx aux;
+  if(R!=NULL){
+    actualiza(pif, R->izq);
+    aux.nrr=R->nrr;
+    aux.llave=R->llave;
+    fwrite(&aux, sizeof(aux), 1, pif);
+    actualiza(pif, R->der);
+  }
+}
+
+void enorden(FILE *pf, Nodo R){
+	reg aux;
+	if(R!=NULL){
+		enorden(pf, R->izq);
+		fseek(pf, R->nrr*sizeof(aux), SEEK_SET);
+		fread(&aux, sizeof(aux), 1, pf);
+		printf("%d   %s   %s   %f \n", aux.cod, aux.autor, aux.disco, aux.precio);
+		enorden(pf, R->der);
+	}
+}
+
+void enorden1(Nodo &a)
+{
+	if(a!=NULL)
+	{
+		 enorden1(a->izq);
+		 printf("%d",a->nrr);
+		 printf("%d",a->llave);
+		 enorden1(a->der);
+	 }
+}
+
+Nodo BuscaPadre(Nodo R, Nodo Raiz){
+	if(Raiz->izq==R||Raiz->der==R)
+		return(Raiz);
+	else{
+		if(Raiz->llave > R->llave)
+			return(BuscaPadre(R, Raiz->izq));
+		else
+			return(BuscaPadre(R, Raiz->der));
+		}
+}
+
+Nodo Maximo(Nodo R){
+	while(R->der!=NULL)
+		R=R->der;
+	return(R);
+}
+
+Nodo Minimo(Nodo R){
+	while(R->izq!=NULL)
+		R=R->izq;
+	return(R);
+}
+
+int Grado(Nodo R){
+	if(R->izq==NULL && R->der==NULL)
+		return(0);
+	if((R->izq!=NULL && R->der==NULL) || (R->izq==NULL && R->der!=NULL))
+		return(1);
+	if(R->izq!=NULL&&R->der!=NULL)
+		return(2);
+}
+
+void Elimina(Nodo R, Nodo Raiz){
+	Nodo aux,min;
+	int x;
+	x=Grado(R);
+	aux=BuscaPadre(R,Raiz);
+	switch(x){
+		case 0:if(R->llave > aux->llave)
+			 aux->der=NULL;
+		 else
+			 aux->izq=NULL;
+		 break;
+		case 1:if(R->llave > aux->llave)
+			 aux->der=R->der;
+		 else
+			 aux->izq=R->izq;
+		 break;
+		case 2:min=Minimo(R);
+		 R->llave=min->llave;
+		 Elimina(min,Raiz);
+		 break;
+		 }
+		delete(R);
+}
+
+

@@ -1,0 +1,315 @@
+//Carlos Fco. Camacho Uribe
+//Taller de Sistemas Operativos
+//Practica 05: Exclusion mutua
+
+#include<stdio.h>
+#include<conio.h>
+#include<dos.h>
+#include<setjmp.h>
+#include<mem.h>
+#include<string.h>
+
+#define Inicial 0
+#define Listo 1
+#define Ejecucion 2
+#define delVar 500
+
+#define Primero 1
+#define Segundo 2
+#define Tercero 3
+
+jmp_buf DirSO;
+char *dir_inicio_pila;
+int op,i,c,tmp;
+int p1_desea_entrar,p2_desea_entrar,p3_desea_entrar,proc_favorecido;
+
+typedef struct{
+   int id;
+   char nombre[14];
+   int estado;
+   void (*direccion)();
+   //------------------------
+   int prioridad_estatica;
+   int prioridad_dinamica;//Maximo 30
+   //Los dos anteriores se deben inicializar con el mismo valor
+   jmp_buf RegistrosCPU;
+   char Pila[4000];
+   size_t tam_pila;
+}BCP;
+
+BCP *aptBCPejec;
+BCP Lista[10];
+
+void ceder_control(){
+   char fin;
+   if(&fin>dir_inicio_pila){
+      aptBCPejec->tam_pila=&fin-dir_inicio_pila+1;
+      memcpy(aptBCPejec->Pila,dir_inicio_pila,aptBCPejec->tam_pila);
+   }else{
+      aptBCPejec->tam_pila=dir_inicio_pila-&fin+1;
+      memcpy(aptBCPejec->Pila,&fin,aptBCPejec->tam_pila);
+    }
+   aptBCPejec->estado=Listo;
+   if(!setjmp(aptBCPejec->RegistrosCPU)){//poner break point aqui
+      longjmp(DirSO,1);
+   }
+}
+
+void restaurar_contexto(){
+   char colchon[4000];
+   if(colchon>dir_inicio_pila)
+      memcpy(dir_inicio_pila,aptBCPejec->Pila,aptBCPejec->tam_pila);
+   else
+      memcpy(dir_inicio_pila-aptBCPejec->tam_pila+1,aptBCPejec->Pila,aptBCPejec->tam_pila);
+   //Estado en ejecucion:
+   aptBCPejec->estado=Ejecucion;
+   longjmp(aptBCPejec->RegistrosCPU,1);
+}
+//----------------Definicion de los procesos---------------
+void proceso1(){
+   while(1){
+      p1_desea_entrar=1;ceder_control();
+      while(p2_desea_entrar||p3_desea_entrar){
+	 ceder_control();
+	 if(proc_favorecido==Segundo||proc_favorecido==Tercero){
+	    p1_desea_entrar=0;ceder_control();
+	    while(proc_favorecido==Segundo||proc_favorecido==Tercero)
+	       ceder_control();
+	    p1_desea_entrar=1;ceder_control();
+	 }
+      }
+      //Inicia seccion critica
+      //clrscr();
+      //textcolor(3);
+      printf("\n\n\tÚÄÄÄÄÄÄÄ¿ (p1)\n\r");ceder_control();
+      printf("\t³*******³ (p1)\n\r");ceder_control();
+      printf("\tÀÄÄÄÄÄÄÄÙ (p1)\n\r");ceder_control();
+      delay(1000);
+      p1_desea_entrar=0;ceder_control();
+      proc_favorecido=Segundo;ceder_control();
+   }
+}
+void proceso2(){
+   while(1){
+      p2_desea_entrar=1;ceder_control();
+      while(p1_desea_entrar||p3_desea_entrar){
+	 ceder_control();
+	 if(proc_favorecido==Primero||proc_favorecido==Tercero){
+	    p2_desea_entrar=0;ceder_control();
+	    while(proc_favorecido==Primero||proc_favorecido==Tercero)
+	       ceder_control();
+	    p2_desea_entrar=1;ceder_control();
+	 }
+      }
+      //Inicia seccion critica
+      //clrscr();
+      //textcolor(6);
+      printf("\n\n\tÚ-------¿ (p2)\n\r");ceder_control();
+      printf("\t³-------³ (p2)\n\r");ceder_control();
+      printf("\tÀ-------Ù (p2)\n\r");ceder_control();
+      delay(1000);
+      p2_desea_entrar=0;ceder_control();
+      proc_favorecido=Tercero;ceder_control();
+   }
+}
+void proceso3(){
+   while(1){
+      p3_desea_entrar=1;ceder_control();
+      while(p2_desea_entrar||p1_desea_entrar){
+	 ceder_control();
+	 if(proc_favorecido==Segundo||proc_favorecido==Tercero){
+	    p3_desea_entrar=0;ceder_control();
+	    while(proc_favorecido==Segundo||proc_favorecido==Tercero)
+	       ceder_control();
+	    p3_desea_entrar=1;ceder_control();
+	 }
+      }
+      //Inicia seccion critica
+      //clrscr();
+      //textcolor(6);
+      printf("\n\n\tÚ+++++++¿ (p3)\n\r");ceder_control();
+      printf("\t³///////³ (p3)\n\r");ceder_control();
+      printf("\tÀ+++++++Ù (p3)\n\r");ceder_control();
+      delay(1000);
+      p3_desea_entrar=0;ceder_control();
+      proc_favorecido=Primero;ceder_control();
+   }
+}
+void proceso4(){
+   ceder_control();
+}
+void proceso5(){
+   ceder_control();
+}
+void proceso6(){
+   ceder_control();
+}
+void proceso7(){
+   ceder_control();
+}
+void proceso8(){
+   ceder_control();
+}
+void proceso9(){
+   ceder_control();
+}
+void proceso10(){
+   ceder_control();
+}
+//------------Fin definicion de los procesos------------
+
+void muestraBCP(){
+   char estados[2][14];
+   strcpy(estados[0],"Listo");
+   strcpy(estados[1],"Ejecutando");
+   clrscr();
+   printf("\n\tContenido del Descriptor de Procesos\n");
+   printf("\n\n");
+   printf("NOMBRE\t\tID\tESTADO\t  DIRECCION Tama¤oPila  P.ESTATICA  P.DINAMICA\n");
+   for(int i=0;i<10;i++){
+      printf("\n%s\t%d\t%s",Lista[i].nombre,Lista[i].id,estados[Lista[i].estado]);
+      gotoxy(38,i+6);
+      printf("%d",Lista[i].direccion);
+      gotoxy(48,i+6);printf("%d",Lista[i].tam_pila);
+      gotoxy(62,i+6);printf("%d",Lista[i].prioridad_estatica);
+      gotoxy(72,i+6);printf("%d\n",Lista[i].prioridad_dinamica);
+   }
+   getch();
+}
+
+void modifPrior(){
+   clrscr();
+   for(int i=0;i<10;i++){
+      printf("\nIntroduce la nueva prioridad del proceso %d: ",i+1);
+      scanf("%d",&Lista[i].prioridad_estatica);
+      Lista[i].prioridad_dinamica=Lista[i].prioridad_estatica;
+   }
+}
+//----------------------------------MAIN-----------------------------------
+
+void main(){
+   char x;
+   dir_inicio_pila=&x;
+   p1_desea_entrar=p2_desea_entrar=p3_desea_entrar=0;
+   proc_favorecido=Primero;
+
+   //-----Inicializacion del BCP-----
+   Lista[0].direccion=&proceso1;
+   Lista[1].direccion=&proceso2;
+   Lista[2].direccion=&proceso3;
+   Lista[3].direccion=&proceso4;
+   Lista[4].direccion=&proceso5;
+   Lista[5].direccion=&proceso6;
+   Lista[6].direccion=&proceso7;
+   Lista[7].direccion=&proceso8;
+   Lista[8].direccion=&proceso9;
+   Lista[9].direccion=&proceso10;
+
+   Lista[0].estado=0;
+   Lista[0].id=1;
+   Lista[0].prioridad_estatica=Lista[0].prioridad_dinamica=130;
+   Lista[1].estado=0;
+   Lista[1].id=2;
+   Lista[1].prioridad_estatica=Lista[1].prioridad_dinamica=130;
+   Lista[2].estado=0;
+   Lista[2].id=3;
+   Lista[2].prioridad_estatica=Lista[1].prioridad_dinamica=130;
+   for(int j=3;j<10;j++){
+      Lista[j].estado=0;
+      Lista[j].id=j+1;
+      Lista[j].prioridad_estatica=Lista[j].prioridad_dinamica=j-1;
+   }
+   strcpy(Lista[0].nombre,"Proceso 1");
+   strcpy(Lista[1].nombre,"Proceso 2");
+   strcpy(Lista[2].nombre,"Proceso 3");
+   strcpy(Lista[3].nombre,"Proceso 4");
+   strcpy(Lista[4].nombre,"Proceso 5");
+   strcpy(Lista[5].nombre,"Proceso 6");
+   strcpy(Lista[6].nombre,"Proceso 7");
+   strcpy(Lista[7].nombre,"Proceso 8");
+   strcpy(Lista[8].nombre,"Proceso 9");
+   strcpy(Lista[9].nombre,"Proceso 10");
+   //-----Fin de la inicializacion-----
+   i=0;
+   setjmp(DirSO);
+
+   //--------------Inicio de iteraciones--------------
+   for(;i++<500;){//poner break point aqui
+      //Elegir siguiente proceso
+      aptBCPejec=&Lista[0];
+		for(c=0;c<10;c++)
+	 if(aptBCPejec->prioridad_dinamica<Lista[c].prioridad_dinamica){
+		 tmp=c;
+		 aptBCPejec=&Lista[tmp];
+	 }
+		//Envejecer procesos
+		for(c=0;c<10;c++)
+	 Lista[c].prioridad_dinamica++;
+		//Reestablecer prioridad dinamica
+		aptBCPejec->prioridad_dinamica=aptBCPejec->prioridad_estatica;
+
+		if(aptBCPejec->estado==Inicial){
+	 aptBCPejec->estado=Ejecucion;
+	 (aptBCPejec->direccion)();
+	 aptBCPejec->estado=Listo;
+		}else
+	 if(aptBCPejec->estado==Listo)
+		 restaurar_contexto();
+   }
+   //---------------Fin de iteraciones----------------
+   do{
+     clrscr();
+     textcolor(7);
+     printf("\n\tMENU:\n\t");
+     printf("\n\t1-Otras 17 iteraciones");
+     printf("\n\t2-Mostrar el contenido del descriptor de procesos");
+     printf("\n\t3-Modificar prioridades");
+     printf("\n\t4-Salir");
+     printf("\n\n\tOpcion: ");
+     scanf("%d",&op);
+
+     switch(op){
+	case 1:{//--------------Inicio de iteraciones--------------
+		for(i=0;i<500;i++){
+		   //Elegir siguiente proceso
+		   aptBCPejec=&Lista[0];
+		   for(c=0;c<10;c++){
+		      if(aptBCPejec->prioridad_dinamica<Lista[c].prioridad_dinamica)
+			 aptBCPejec=&Lista[c];
+		   }
+		   //Envejecer procesos
+		   for(c=0;c<10;c++)
+		      Lista[c].prioridad_dinamica++;
+		   //Reestablecer prioridad dinamica
+		   aptBCPejec->prioridad_dinamica=aptBCPejec->prioridad_estatica;
+
+		   if(aptBCPejec->estado==Inicial){
+		      aptBCPejec->estado=Ejecucion;
+		      (aptBCPejec->direccion)();
+		      aptBCPejec->estado=Listo;
+		   }else
+		      if(aptBCPejec->estado==Listo)
+			 restaurar_contexto();
+		}
+		//---------------Fin de iteraciones----------------
+	       }break;
+	case 2:muestraBCP();
+	       break;
+	case 3:modifPrior();
+	       break;
+	case 4:printf("\n\n\tFin del Programa");
+	       break;
+	default:{printf("\n\tDebes seleccionar un numero de entre el 1 y el 4");
+		 delay(1000);
+		}
+     }
+   }while(op!=4);
+   delay(1000);
+}
+//Ctrl+F8 = Activar breakpoint en la linea seleccionada
+//Usar breakpoint en el for de las iteraciones
+/*MODIFICACIONES: usar una bandera para ejecutar las
+iteraciones directo del Switch-case y asi no repetir
+el codigo 2 veces; hacer el proceso 3 tambien para
+exclusion mutua; cambiar a los demas procesos para
+que no hagan nada (solo ceder_control)*/

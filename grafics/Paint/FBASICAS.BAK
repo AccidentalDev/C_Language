@@ -1,0 +1,318 @@
+#include<stdio.h>
+#include<conio.h>
+#include<math.h>
+#include<stdlib.h>
+#include<time.h>
+#include<C:\Tc\Prog\Grafics\Paint\interupt.h>
+
+unsigned char cLinea[5000];//Linea
+unsigned char cLinea2[500][8];//Circulo
+unsigned char cLinea3[2000][4];//Elipse
+
+//-----------Inicio poligonos-----------
+typedef struct{
+   int x;
+   int y;
+   int color;
+}Puntos;
+
+Puntos punto,arrPoint[5000],lados[10];
+int contG=0;
+//-------------fin poligonos------------
+
+void pincel(int x,int y,int tamanyo,int c){
+   x=x-(tamanyo/2);
+   y=y-(tamanyo/2);
+   for(int i=0;i<tamanyo;i++)
+      for(int j=0;j<tamanyo;j++)
+	 pixel(x+i,y+j,c);
+}
+void pinceloco(int x,int y,int tamanyo){
+   unsigned char tempo;
+   x=x-(tamanyo/2);
+   y=y-(tamanyo/2);
+   for(int i=0;i<tamanyo;i++)
+      for(int j=0;j<tamanyo;j++){
+	 tempo=lee_pixel(x+i,y+j);
+	 pixel(x+i,y+j,tempo+1);
+      }
+}
+void spray(int x,int y,int tamanyo,int c,int dispersion){
+   x=x-(tamanyo/2);
+   y=y-(tamanyo/2);
+   for(int i=0;i<tamanyo;i++)
+      for(int j=0;j<tamanyo;j++)
+	 if(random(tamanyo*dispersion)<=tamanyo)
+	    pixel(x+i,y+j,c);
+}
+void uso(int vx,int vy,int vc,int m){
+   switch(m){
+      //Layout
+      case 0:pixel2(vx,vy,vc);
+	     break;
+      //Modo normal
+      case 1&&4:pixel(vx,vy,vc);
+	     break;
+      //Borrador
+      case 2:pincel(vx,vy,12,vc);
+	     break;
+      //Spray
+      case 3:spray(vx,vy,12,vc,60);
+	     break;
+      //Pincel loco
+      case 32:pinceloco(vx,vy,12);
+	     break;
+   }
+}
+void uso2(int vx,int vy,int cr,int m){
+   switch(m){
+      //Linea normal
+      case 1:{cLinea[cr]=lee_pixel(vx,vy);
+	     }break;
+      //Poligonos
+      case 4:{arrPoint[contG].x=vx;
+	      arrPoint[contG].y=vy;
+	      arrPoint[contG].color=lee_pixel(vx,vy);
+	      contG++;
+	     }break;
+   }
+}
+void lineaB(int px1,int py1,int px2,int py2,int col,int b,int mode){
+   cursor(0x2);
+   //pixel(px1,py1,col);
+   if(b==0)
+      uso2(px1,py1,0,mode);
+   if(b==1)
+      uso(px1,py1,col,mode);
+
+   int pk,xk,yk,Ax,Ay;
+   int incX,incY;
+   int c=0;
+   //Calculos preliminares
+   if(px1<px2)
+      incX=1;
+   else
+      if(px1>px2)
+	 incX=-1;
+      else
+	 incX=0;
+   if(py1<py2)
+      incY=1;
+   else
+      if(py1>py2)
+	 incY=-1;
+      else
+	 incY=0;
+   //Comienzan calculos para el algoritmo de Bresenham
+   Ax=px1-px2;
+   Ax=abs(Ax);
+   Ay=py1-py2;
+   Ay=abs(Ay);
+   //comienza a dibujarse la linea de bresenham
+   if(Ax>Ay){
+      pk=(2*Ay)-Ax;
+      xk=px1;
+      yk=py1;
+      do{
+	if(pk<0){
+	   xk+=incX;
+	   pk=pk+(2*Ay);
+	}else{
+	   xk+=incX;yk+=incY;
+	   pk=pk+2*(Ay-Ax);
+	 }
+	//Inicia seccion de bandera
+	if(b==0)
+	   uso2(xk,yk,c,mode);//cLinea[c]=lee_pixel(xk,yk);
+	if(b==1)
+	   uso(xk,yk,col,mode);//pixel(xk,yk,col);
+	if(b==2)
+	   pixel(xk,yk,cLinea[c]);
+	//Finaliza seccion de bandera
+	c++;
+      }while(c<Ax);
+   }else{
+      pk=(2*Ax)-Ay;
+      xk=px1;
+      yk=py1;
+      do{
+	if(pk<0){
+	   yk+=incY;
+	   pk=pk+(2*Ax);
+	}else{
+	   yk+=incY;xk+=incX;
+	   pk=pk+2*(Ax-Ay);
+	 }
+	//Inicia seccion de bandera
+	if(b==0)
+	   uso2(xk,yk,c,mode);//cLinea[c]=lee_pixel(xk,yk);
+	if(b==1)
+	   uso(xk,yk,col,mode);//pixel(xk,yk,col);
+	if(b==2)
+	   pixel(xk,yk,cLinea[c]);
+	c++;
+      }while(c<Ay);
+   }
+   cursor(0x1);
+}
+void puntos(int xc,int yc,int x,int y,int c,int cont,int ban){//Circulo
+   if(ban==0){
+      cLinea2[cont][0]=lee_pixel(xc+x,yc+y);
+      cLinea2[cont][1]=lee_pixel(xc-x,yc+y);
+      cLinea2[cont][2]=lee_pixel(xc+x,yc-y);
+      cLinea2[cont][3]=lee_pixel(xc-x,yc-y);
+      cLinea2[cont][4]=lee_pixel(xc+y,yc+x);
+      cLinea2[cont][5]=lee_pixel(xc-y,yc+x);
+      cLinea2[cont][6]=lee_pixel(xc+y,yc-x);
+      cLinea2[cont][7]=lee_pixel(xc-y,yc-x);
+   }
+   if(ban==1){
+      pixel(xc+x,yc+y,c);
+      pixel(xc-x,yc+y,c);
+      pixel(xc+x,yc-y,c);
+      pixel(xc-x,yc-y,c);
+      pixel(xc+y,yc+x,c);
+      pixel(xc-y,yc+x,c);
+      pixel(xc+y,yc-x,c);
+      pixel(xc-y,yc-x,c);
+   }
+   if(ban==2){
+      pixel(xc+x,yc+y,cLinea2[cont][0]);
+      pixel(xc-x,yc+y,cLinea2[cont][1]);
+      pixel(xc+x,yc-y,cLinea2[cont][2]);
+      pixel(xc-x,yc-y,cLinea2[cont][3]);
+      pixel(xc+y,yc+x,cLinea2[cont][4]);
+      pixel(xc-y,yc+x,cLinea2[cont][5]);
+      pixel(xc+y,yc-x,cLinea2[cont][6]);
+      pixel(xc-y,yc-x,cLinea2[cont][7]);
+   }
+}
+void circulo(int xc,int yc,int radio,int color,int b){
+   int x,y,p;
+   int c=0;
+   x=0;
+   y=radio;
+   cursor(0x2);
+   puntos(xc,yc,x,y,color,c,b);
+   c++;
+   p=1-radio;
+   while(x<y){
+      if(p<0){
+	 x++;
+	 p+=2*x+1;
+      }else{
+	 x++;y--;
+	 p+=2*(x-y)-1;
+      }
+      puntos(xc,yc,x,y,color,c,b);
+      c++;
+   }
+   cursor(0x1);
+}
+void puntos2(int xc,int yc,int x,int y,int c,int cont,int ban){
+   if(ban==0){
+      cLinea3[cont][0]=lee_pixel(xc+x,yc+y);
+      cLinea3[cont][1]=lee_pixel(xc-x,yc+y);
+      cLinea3[cont][2]=lee_pixel(xc+x,yc-y);
+      cLinea3[cont][3]=lee_pixel(xc-x,yc-y);
+   }
+   if(ban==1){
+      pixel(xc+x,yc+y,c);
+      pixel(xc-x,yc+y,c);
+      pixel(xc+x,yc-y,c);
+      pixel(xc-x,yc-y,c);
+   }
+   if(ban==2){
+      pixel(xc+x,yc+y,cLinea3[cont][0]);
+      pixel(xc-x,yc+y,cLinea3[cont][1]);
+      pixel(xc+x,yc-y,cLinea3[cont][2]);
+      pixel(xc-x,yc-y,cLinea3[cont][3]);
+   }
+}
+void elipse(int xc,int yc,long rx,long ry,int color,int b){
+   long p,px,py,rx2,ry2,x2rx2,x2ry2;
+   int x,y;
+   int contador=0;
+   cursor(0x2);
+   rx2=rx*rx;
+   ry2=ry*ry;
+   x2rx2=2*rx2;
+   x2ry2=2*ry2;
+   //Inician calculos para region 1
+   x=0;
+   y=ry;
+   puntos2(xc,yc,x,y,color,contador,b);
+   contador++;
+   p=ceil(ry2-rx2*ry+(0.25*rx2));
+   px=0;
+   py=x2rx2*y;
+   while(px<py){
+      x++;
+      px+=x2ry2;
+      if(p>=0){
+	 y--;
+	 py-=x2rx2;
+      }
+      if(p<0)
+	 p+=ry2+px;
+      else
+	 p+=ry2+px-py;
+      puntos2(xc,yc,x,y,color,contador,b);
+      contador++;
+   }
+   //Inician calculos para region 2
+   p=ceil(ry2*(x+0.5)*(x+0.5)+rx2*(y-1)*(y-1)-rx2*ry2);
+   while(y>0){
+      y--;
+      py-=x2rx2;
+      if(p<=0){
+	 x++;
+	 px+=x2ry2;
+      }
+      if(p>0)
+	 p+=rx2-py;
+      else
+	 p+=rx2-py+px;
+      puntos2(xc,yc,x,y,color,contador,b);
+      contador++;
+   }
+   cursor(0x1);
+}
+void curva(int x0,int y0,int x1,int y1,int x2,int y2,int x3,int y3,int color,int bn){
+   double time;
+   int xx,yy;
+   cursor(0x2);
+   for(time=0;time<=1.0;time+=0.001){
+      xx=pow(1-time,3)*x0+3*time*pow(1-time,2)*x1+3*pow(time,2)*(1-time)*x2+pow(time,3)*x3;
+      yy=pow(1-time,3)*y0+3*time*pow(1-time,2)*y1+3*pow(time,2)*(1-time)*y2+pow(time,3)*y3;
+      //Inicia seccion de bandera
+      if(bn==0)
+	 cLinea[time*1000]=lee_pixel(xx,yy);
+      if(bn==1)
+	 pixel(xx,yy,color);
+      if(bn==2)
+	 pixel(xx,yy,cLinea[time*1000]);
+   }
+   cursor(0x1);
+}
+void polar(int xc,int yc,int r,float a){
+   float radian;
+   radian=180/M_PI;
+   punto.x=xc+ceill(r*cos(a/radian));
+   punto.y=yc+ceill(r*sin(a/radian));
+}
+void polys(int xc,int yc,int radio,float angulo,int caras,int c,int ban){
+   cursor(0x2);
+   int l,ang=360/caras;
+
+   for(l=0;l<caras;l++){
+      polar(xc,yc,radio,angulo);
+      angulo+=ang;
+      lados[l]=punto;
+   }
+
+   for(l=0;l<caras-1;l++)
+      lineaB(lados[l].x,lados[l].y,lados[l+1].x,lados[l+1].y,c,ban,4);
+   lineaB(lados[l].x,lados[l].y,lados[0].x,lados[0].y,c,ban,4);
+   cursor(0x1);
+}

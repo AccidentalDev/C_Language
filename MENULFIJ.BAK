@@ -1,0 +1,237 @@
+//Carlos Francisco Camacho Uribe
+//Taller de Estructura de Archivos
+//Archivos con registros de longitud fija
+#include<stdio.h>
+#include<conio.h>
+#include<stdlib.h>
+#include<io.h>
+#include<string.h>
+#include<C:/Tc/Prog/Arbolf.h>
+#define nAr "C:/Tc/Prog/cuentas.txt"
+#define nIdx "C:/Tc/Prog/indice.idx"
+//#include<C:/Usuarios/carlosf/Arbolf.h>
+//#define nAr "C:/Usuarios/carlosf/cuentas.txt"
+//#define nIdx "C:/Usuarios/carlosf/indice.idx"
+
+typedef struct{
+   char banco[12],cuenta[6];
+   int sucursal,codigo;
+}Cuentas;
+
+void rellena_espacios(Cuentas &cuen){
+	int nchar;
+	nchar=strlen(cuen.banco);
+	for(int i=nchar;i<11;i++)
+		strcat(cuen.banco," ");
+	nchar=strlen(cuen.cuenta);
+	for(int j=nchar;j<5;j++)
+		strcat(cuen.cuenta," ");
+}
+
+int creaF(FILE *fDesc,char *archivo,int tipo){
+   int cant=-1;
+   if((fDesc=fopen(archivo,"a+"))==0)
+      return(0);
+   else{
+      if(tipo==1)
+	 fwrite(&cant,2,1,fDesc);
+      fclose(fDesc);
+      printf("\n\tEl archivo no existe, se procedera a crearlo");
+      getch();
+      return(1);
+   }
+}
+int totalRegs(FILE *fdsc){
+   int tr=-6;
+   fseek(fdsc,0L,0);
+   fread(&tr,2,1,fdsc);
+   return(tr);
+}
+void cargaArbol(Nodo A){
+   FILE *pIdx;Nodo temp;
+   tipo_elem t1;int t2,ban=0,ban2=0;
+   if((pIdx=fopen(nIdx,"r+"))==0){
+      if(creaF(pIdx,nIdx,0)==0)
+	 printf("\n\tError al abrir el indice\n\t");
+      else{
+	 ban=1;
+	 pIdx=fopen(nIdx,"r+");
+		}
+   }else
+      ban=1;
+   if(ban==1){
+      Inicializa(A);
+      while(feof(pIdx)==0){
+	 fread(&t1,2,1,pIdx);
+	 fread(&t2,2,1,pIdx);
+	 if(ban2==1)
+	    Inserta(0,t2,t1,A);
+	 ban2=1;
+      }
+   fclose(pIdx);
+   }
+}
+void agregaReg(FILE *fDesc,Nodo Ar){
+   int regs;
+   Cuentas Cu;
+   fseek(fDesc,0L,0);
+   fread(&regs,2,1,fDesc);
+   printf("\n\tDame el nombre del banco:\n\t");
+   scanf("%s", &Cu.banco);
+   printf("\tdame el numero de cuenta:\n\t");
+   scanf("%s", &Cu.cuenta);
+   printf("\tdame el numero de la sucursal:\n\t");
+   scanf("%d", &Cu.sucursal);
+   printf("\tdame el codigo de la cuenta (no se debe repetir):\n\t");
+   scanf("%d", &Cu.codigo);
+   fflush(stdin);
+	rellena_espacios(Cu);
+	regs++;
+   fseek(fDesc,0L,2);
+   if(fwrite(&Cu,sizeof(Cu),1,fDesc)<1)
+      printf("\n\tError al escribir el archivo");
+   else
+      Inserta(0,Cu.codigo,ftell(fDesc)-sizeof(Cu),Ar);
+	fseek(fDesc,0L,0);
+   fwrite(&regs,2,1,fDesc);
+}
+void modificaReg(FILE *fDesc,int NRR){
+   Cuentas Cu;
+   printf("\n\tDame el nombre del banco:\n\t");
+   scanf("%s", &Cu.banco);
+   printf("\tdame el numero de cuenta:\n\t");
+   scanf("%s", &Cu.cuenta);
+   printf("\tdame el numero de la sucursal:\n\t");
+   scanf("%d", &Cu.sucursal);
+   fflush(stdin);
+   rellena_espacios(Cu);
+   fseek(fDesc,NRR,0);
+   if(fwrite(&Cu,sizeof(Cu),1,fDesc)<1)
+      printf("\n\tError al escribir el archivo");
+}
+void print_orden(Nodo R,FILE *pFile){
+   Cuentas aux;
+   if(R!=NULL){
+      print_orden(R->izq,pFile);
+      fseek(pFile,R->info*sizeof(aux),0);
+      fread(&aux,sizeof(aux),1,pFile);
+      printf("\n\t%d\t%s\t%s\t%d",aux.codigo,aux.banco,aux.cuenta,aux.sucursal);
+      print_orden(R->der,pFile);
+   }
+}
+/*---------------Funcion temporal-----------------*/
+void leeReg(FILE *desc){
+   Cuentas Reg[2];
+   fseek(desc,2L,0);
+   if(fread(&Reg,sizeof(Cuentas),2,desc)<1)
+      printf("\n\tError al leer el archivo");
+   else{
+      printf("\n\t%d\t%s\t%s\t%d",Reg[0].codigo,Reg[0].banco,Reg[0].cuenta,Reg[0].sucursal);
+      printf("\n\t%d\t%s\t%s\t%d",Reg[1].codigo,Reg[1].banco,Reg[1].cuenta,Reg[1].sucursal);
+   }
+   getch();
+}
+/*------------------------------------------------*/
+
+/*-------------------------------MAIN-----------------------------------*/
+void main(){
+ int select,/*numRegs,*/bn=0;
+ Cuentas tmp;
+ char sel;
+ Nodo Arbol,ntemp;
+ FILE *fd;
+ clrscr();
+ if((fd=fopen(nAr,"r+"))==0){
+    if(creaF(fd,nAr,1)==0)
+       printf("\n\tError al abrir el archivo\n\t");
+    else{
+       bn=1;
+       fd=fopen(nAr,"r+");
+    }
+ }else
+    bn=1;
+ if(bn==1){
+    //numRegs=totalRegs(fd);//Obtener el numero de registros en el archivo
+    cargaArbol(Arbol);//Carga el indice al arbol
+    do{
+      clrscr();
+      printf("\n\tARCHIVOS SECUENCIALES CON REGISTROS\n\t");
+      printf("\tDE LONGITUD FIJA\n\t");
+      printf("\n\tSelecciona lo que quieres hacer:\n\t");
+      printf("\n\t1-Agregar registro\n\t2-Lista ordenada\n\t");
+      printf("3-Localizar\n\t");
+      printf("4-Modificar\n\t5-Eliminar\n\t6-Salir\n\t");
+      scanf("%d", &select);
+      switch(select){
+	     case 1:{do{
+		       clrscr();
+		       agregaReg(fd,Arbol);
+		       printf("\n\t¨quieres agregar otro registro? (s/n)\n\t");
+		       scanf("%c", &sel);
+		     }while(sel=='s');
+		    }break;
+	     case 2:{clrscr();
+		     print_orden(Arbol,fd);
+		    }break;
+	     case 3:{do{
+		       clrscr();
+		       printf("\n\tEscribe el codigo del registro a localizar:\n\t");
+		       scanf("%d", &tmp.codigo);
+		       fflush(stdin);
+		       ntemp=busquedaBin(tmp.codigo,Arbol);
+		       if(ntemp!=NULL){
+			  fseek(fd,ntemp->info*sizeof(tmp),0);
+			  fread(&tmp,sizeof(tmp),1,fd);
+			  printf("\n\t%d\t%s\t%s\t%d",tmp.codigo,tmp.banco,tmp.cuenta,tmp.sucursal);
+		       }else
+			  printf("\n\tNo se encontro el registro\n\t");
+		     //clrscr();
+		     //printf("\n\tHay %d registros en el archivo", numRegs+1);
+		     //printf("\n\n");
+		     //leeReg(fd);
+		       printf("\n\t¨quieres localizar otro registro? (s/n)\n\t");
+		       scanf("%c", &sel);
+		     }while(sel=='s');
+		    }break;
+	     case 4:{do{
+		       clrscr();
+		       printf("\n\tEscribe el codigo del registro a modificar:\n\t");
+		       scanf("%d", &tmp.codigo);
+		       fflush(stdin);
+		       ntemp=busquedaBin(tmp.codigo,Arbol);
+		       if(ntemp!=NULL){
+			  modificaReg(fd,ntemp->info);
+		       }else
+			  printf("\n\tNo se encontro el registro\n\t");
+		       printf("\n\t¨quieres modificar otro registro? (s/n)\n\t");
+		       scanf("%c", &sel);
+		     }while(sel=='s');
+		    }break;
+	     case 5:{do{
+		       clrscr();
+		       printf("\n\tEscribe el codigo del registro a eliminar:\n\t");
+		       scanf("%d", &tmp.codigo);
+		       fflush(stdin);
+		       ntemp=busquedaBin(tmp.codigo,Arbol);
+		       if(ntemp!=NULL){
+			  eliminar(tmp.codigo,Arbol);
+		       }else
+			  printf("\n\tNo se encontro el registro\n\t");
+		       printf("\n\t¨quieres eliminar otro registro? (s/n)\n\t");
+		       scanf("%c", &sel);
+		     }while(sel=='s');
+		    }break;
+	     case 6:{FILE *pIndx;
+		     if((pIndx=fopen(nIdx,"r+"))==0)
+			printf("\n\tError al abrir el indice\n\t");
+		     else
+			preorden(Arbol,pIndx);//actualiza indice
+		     printf("\n\tPresione cualquier tecla para salir del programa");
+		    }break;
+	     default:printf("\n\tDebes elegir de entre el 1 y el 6\n");
+      }
+    }while(select!=6);
+ fclose(fd);
+ }
+ getch();
+}

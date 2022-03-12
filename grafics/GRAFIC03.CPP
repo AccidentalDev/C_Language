@@ -1,0 +1,70 @@
+//Graficas por computadora
+//Practica 03
+#include<stdio.h>
+#include<conio.h>
+#include<dos.h>
+#include<MATH.H>
+void modo(int modo){
+   union REGS reg;
+   reg.x.ax=modo; //guarda el valor en el registro
+   int86(0x10,&reg,&reg); //ejecuta la interrupcion
+}
+void pixel(int x,int y,int color){
+   union REGS reg;
+   reg.h.ah=0xc; //valor del pixel
+   reg.h.al=color; //color del pixel
+   reg.h.bh=0; // pagina
+   reg.x.cx=x; //coordenada x
+   reg.x.dx=y; //coordenada y
+   int86(0x10,&reg,&reg); //ejecuta la interrupcion
+}
+void layout(int px1,int px2,int py1,int py2,int col){
+   int pk,xk,yk,Ax,Ay;
+   //Comienzan calculos para el algoritmo de Bresenham
+   xk=px1;yk=py1;
+   Ax=px1-px2;
+   Ax=abs(Ax);
+   Ay=py1-py2;
+   Ay=abs(Ay);
+   pk=(2*Ay)-Ax;
+   //comienza a dibujarse la linea de bresenham
+   do{
+     printf("\t\t\t\t\tXk= %d      Yk= %d\n",xk,yk);
+     pixel(xk,yk,col);
+     if(pk<0){
+	xk++;
+	pk=pk+(2*Ay);
+     }else{
+	xk++;yk++;
+	pk=pk+(2*Ay)-(2*Ax);
+      }
+   }while(xk<=px2&&yk<=py2);
+   getch();
+}
+/*****************************-M-A-I-N-******************************/
+void main(){
+ int x1,x2,y1,y2,color;
+ char op;
+ do{
+   clrscr();
+   printf("\n\tLINEA DE BRESENHAM\n\t");
+   printf("\n\tNOTA: El rango es de 160x100 a 256 colores\n\t");
+   printf("\n\tEscribe la coordenada x1: ");
+   scanf("%d",&x1);
+   printf("\n\tEscribe la coordenada y1: ");
+   scanf("%d",&y1);
+   printf("\n\tEscribe la coordenada x2: ");
+   scanf("%d",&x2);
+   printf("\n\tEscribe la coordenada y2: ");
+   scanf("%d",&y2);
+   printf("\n\tEscribe el color: ");
+   scanf("%d",&color);
+   modo(0x12);
+   layout(x1,x2,y1,y2,color);
+   modo(0x3);
+   printf("\n\t¨Dibujar otra linea? (s/n): ");
+   op=getch();
+   /*scanf("%s",&op);
+   fflush(stdin);*/
+ }while(op!='n');
+}
